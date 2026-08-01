@@ -17,6 +17,8 @@ license = "MIT OR Apache-2.0"
 rust-version = "1.85"
 description = "A modern, fast, and secure C++ package manager and build orchestrator."
 repository = "https://github.com/KnightShadows/Beru"
+homepage = "https://github.com/KnightShadows/Beru"
+documentation = "https://github.com/KnightShadows/Beru/blob/main/USER_MANUAL.md"
 
 [workspace.dependencies]
 # Serialization

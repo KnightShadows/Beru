@@ -19,7 +19,7 @@ jobs:
         os: [macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
@@ -64,7 +64,7 @@ jobs:
       if: startsWith(matrix.distro, 'archlinux')
       run: pacman -Syu --noconfirm && pacman -S --noconfirm git curl gcc base-devel openssl
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install Rust
       run: |

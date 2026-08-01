@@ -37,7 +37,7 @@ reqwest = { version = "0.12", features = ["blocking", "rustls-tls"], default-fea
 tokio = { version = "1", features = ["full"] }
 
 # Crypto
-sha2 = "0.10"
+sha2 = "0.11"
 
 # Archive
 tar = "0.4"

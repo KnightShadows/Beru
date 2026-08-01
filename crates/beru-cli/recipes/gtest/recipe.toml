@@ -1,0 +1,21 @@
+[package]
+name = "gtest"
+version = "1.15.2"
+type = "library"
+description = "Google Testing and Mocking Framework"
+license = "BSD-3-Clause"
+homepage = "https://github.com/google/googletest"
+
+[source]
+url = "https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz"
+sha256 = "7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926"
+
+[build]
+system = "cmake"
+cmake-args = ["-DBUILD_GMOCK=OFF"]
+
+[export]
+include-dirs = ["googletest/include"]
+link-libs = ["gtest", "gtest_main"]
+cmake-package = "GTest"
+cmake-targets = ["GTest::gtest", "GTest::gtest_main"]

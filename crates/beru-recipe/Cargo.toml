@@ -1,0 +1,20 @@
+[package]
+name = "beru-recipe"
+description = "Beru recipe engine: fetch, verify, and prepare non-Beru packages"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+beru-manifest = { workspace = true }
+beru-core = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+sha2 = { workspace = true }
+reqwest = { workspace = true }
+tar = { workspace = true }
+flate2 = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tempfile = { workspace = true }

@@ -1,0 +1,15 @@
+[package]
+name = "beru-manifest"
+description = "Beru.toml manifest parser and lockfile support"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+toml = { workspace = true }
+anyhow = { workspace = true }
+semver = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]

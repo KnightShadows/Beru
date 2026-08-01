@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  native:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+    - name: Lint with clippy
+      run: cargo clippy --workspace --all-targets -- -D warnings
+
+    - name: Build workspace
+      run: cargo build --workspace --all-targets
+
+    - name: Run tests
+      run: cargo test --workspace
+
+  linux_distros:
+    name: Build & Test (${{ matrix.distro }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [debian:latest, fedora:latest, archlinux:latest]
+    container:
+      image: ${{ matrix.distro }}
+    
+    steps:
+    - name: Install dependencies (Debian)
+      if: startsWith(matrix.distro, 'debian')
+      run: apt-get update && apt-get install -y git curl build-essential pkg-config libssl-dev
+
+    - name: Install dependencies (Fedora)
+      if: startsWith(matrix.distro, 'fedora')
+      run: dnf install -y git curl gcc gcc-c++ make openssl-devel perl findutils
+
+    - name: Install dependencies (Arch)
+      if: startsWith(matrix.distro, 'archlinux')
+      run: pacman -Syu --noconfirm && pacman -S --noconfirm git curl gcc base-devel openssl
+
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --component clippy rustfmt
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+    - name: Lint with clippy
+      run: cargo clippy --workspace --all-targets -- -D warnings
+
+    - name: Build workspace
+      run: cargo build --workspace --all-targets
+
+    - name: Run tests
+      run: cargo test --workspace

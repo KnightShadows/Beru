@@ -1,0 +1,10 @@
+[package]
+name = "test-opencv"
+version = "0.1.0"
+cxx-std = "c++11"
+
+[build]
+type = "executable"
+
+[dependencies]
+opencv = "4.10.0"

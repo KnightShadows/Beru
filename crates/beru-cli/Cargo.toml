@@ -1,0 +1,23 @@
+[package]
+name = "beru-cli"
+description = "Beru command-line interface"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "beru"
+path = "src/main.rs"
+
+[dependencies]
+beru-manifest = { workspace = true }
+beru-core = { workspace = true }
+beru-recipe = { workspace = true }
+beru-build = { workspace = true }
+beru-resolve = { workspace = true }
+clap = { workspace = true }
+indicatif = { workspace = true }
+console = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

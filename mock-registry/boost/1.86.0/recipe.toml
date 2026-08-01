@@ -1,0 +1,20 @@
+[package]
+name = "boost"
+version = "1.86.0"
+type = "library"
+description = "Boost provides free peer-reviewed portable C++ source libraries."
+
+[source]
+url = "https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.gz"
+sha256 = "2575e74ffc3ef1cd0babac2c1ee8bdb5782a0ee672b1912da40e5b4b591ca01f"
+
+[build]
+system = "custom"
+commands = [
+    "./bootstrap.sh --prefix={install_dir}",
+    "./b2 install --prefix={install_dir} -j{jobs} --with-system --with-filesystem variant=release link=shared,static threading=multi"
+]
+
+[export]
+include-dirs = ["include"]
+link-libs = ["boost_system", "boost_filesystem"]

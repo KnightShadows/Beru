@@ -1,0 +1,3 @@
+/home/adityaanand/Downloads/Beru/test-catch2/build/CMakeFiles/test_catch2.dir
+/home/adityaanand/Downloads/Beru/test-catch2/build/CMakeFiles/edit_cache.dir
+/home/adityaanand/Downloads/Beru/test-catch2/build/CMakeFiles/rebuild_cache.dir

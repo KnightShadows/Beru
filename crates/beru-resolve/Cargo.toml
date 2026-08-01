@@ -1,0 +1,15 @@
+[package]
+name = "beru-resolve"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+pubgrub = { workspace = true }
+semver = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+beru-manifest = { workspace = true }
+beru-recipe = { workspace = true }
+beru-core = { workspace = true }

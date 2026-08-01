@@ -1,0 +1,64 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/beru-cli",
+    "crates/beru-core",
+    "crates/beru-manifest",
+    "crates/beru-recipe",
+    "crates/beru-build",
+    "crates/beru-resolve",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.85"
+description = "A modern, fast, and secure C++ package manager and build orchestrator."
+repository = "https://github.com/KnightShadows/Beru"
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+toml_edit = "0.22"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
+console = "0.15"
+
+# Error handling
+anyhow = "1"
+thiserror = "2"
+
+# Async + networking
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"], default-features = false }
+tokio = { version = "1", features = ["full"] }
+
+# Crypto
+sha2 = "0.10"
+
+# Archive
+tar = "0.4"
+flate2 = "1"
+
+# Filesystem / platform
+tempfile = "3"
+which = "7"
+dirs = "6"
+
+# Versioning
+semver = { version = "1", features = ["serde"] }
+pubgrub = "0.2"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Internal crates
+beru-core = { version = "0.1.0", path = "crates/beru-core" }
+beru-manifest = { version = "0.1.0", path = "crates/beru-manifest" }
+beru-recipe = { version = "0.1.0", path = "crates/beru-recipe" }
+beru-build = { version = "0.1.0", path = "crates/beru-build" }
+beru-resolve = { version = "0.1.0", path = "crates/beru-resolve" }

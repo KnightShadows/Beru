@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/test_opencv.dir/link.d CMakeFiles/test_opencv.dir/src/main.cpp.o -o test_opencv  -Wl,-rpath,/home/adityaanand/.beru/cache/builds/d156e7bb3f53d26885a1b908b8fa3c51/opencv-4.10.0/lib64 /home/adityaanand/.beru/cache/builds/d156e7bb3f53d26885a1b908b8fa3c51/opencv-4.10.0/lib64/libopencv_core.so.4.10.0

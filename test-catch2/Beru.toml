@@ -1,0 +1,10 @@
+[package]
+name = "test-catch2"
+version = "0.1.0"
+cxx-std = "c++20"
+
+[build]
+type = "executable"
+
+[dependencies]
+catch2 = "3.7.1"

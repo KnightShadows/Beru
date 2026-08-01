@@ -28,7 +28,7 @@ pub fn exec(args: IndexArgs) -> Result<()> {
 
             let index_dir = cache.index_dir();
 
-            let default_url = "https://github.com/KnightShadows/Beru-index.git";
+            let default_url = "https://github.com/KnightShadows/beru-index.git";
             let url = url.as_deref().unwrap_or(default_url);
 
             info!("Updating Beru index from {}", url);

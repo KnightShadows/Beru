@@ -16,11 +16,32 @@ pub struct InitArgs {
 
 pub fn exec(args: InitArgs) -> Result<()> {
     let cwd = std::env::current_dir().context("failed to get current directory")?;
-    let name = cwd
+    let raw_name = cwd
         .file_name()
         .and_then(|n| n.to_str())
-        .unwrap_or("my-project")
-        .to_string();
+        .unwrap_or("my-project");
+
+    // Sanitize into a valid Beru package name:
+    // lowercase, replace underscores/spaces with hyphens, strip invalid chars
+    let name: String = raw_name
+        .to_lowercase()
+        .chars()
+        .map(|c| match c {
+            '_' | ' ' => '-',
+            c if c.is_ascii_alphanumeric() || c == '-' => c,
+            _ => '-',
+        })
+        .collect();
+
+    // Ensure the name starts with a letter and is at least 2 chars
+    let name = if name.is_empty()
+        || !name.chars().next().unwrap_or('0').is_ascii_lowercase()
+        || name.len() < 2
+    {
+        "my-project".to_string()
+    } else {
+        name
+    };
 
     if cwd.join("Beru.toml").exists() {
         println!(

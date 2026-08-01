@@ -196,15 +196,42 @@ Because dependencies are built in isolation and cached by a hash of their versio
 
 ---
 
-## 7. CLI Reference
+## 7. Multiple Binaries (Loose Files)
+
+Beru natively supports compiling and running individual C++ files independently within the same project. This is especially useful for **competitive programming**, experimenting, or writing small disconnected scripts.
+
+If your project is an `executable`, Beru treats every loose `.cpp` file in the `src/` directory as a standalone program.
+
+### How It Works
+
+- **If `src/` contains exactly 1 file:** `beru run` simply compiles and executes it.
+- **If `src/` contains multiple files (and one is `main.cpp`):** `beru run` compiles and executes `main.cpp` by default.
+- **If `src/` contains multiple files (and NO `main.cpp`):** `beru run` will compile and execute the first file alphabetically, and print a warning to let you know about the ambiguity.
+
+### Running a Specific File
+
+To build and execute a specific file (e.g., `src/day1.cpp`), simply pass the filename to the run command:
+```bash
+beru run day1.cpp
+```
+*(You can also omit the extension: `beru run day1`)*
+
+Beru will instantly dynamically generate a target just for `day1.cpp`, compile it, and run it. The other files in the `src/` folder are completely ignored, keeping the build blazing fast.
+
+> [!IMPORTANT]
+> Because every loose `.cpp` file in `src/` is treated as a candidate executable, you cannot place shared helper files (like `utils.cpp` that don't have a `main()` function) directly in the `src/` folder. Shared C++ code should be placed in a subdirectory (e.g., `src/shared/utils.cpp`) to avoid linking errors.
+
+---
+
+## 8. CLI Reference
 
 Beru provides a familiar, intuitive command-line interface.
 
 - **`beru new <name>`**: Creates a new C++ project directory with a default manifest and `src/main.cpp`.
 - **`beru init`**: Initializes an existing directory as a Beru project.
 - **`beru resolve`**: Computes the dependency graph and generates/updates the `Beru.lock` file.
-- **`beru build`**: Resolves dependencies, fetches sources, builds missing dependencies, and compiles the project into the `target/` directory.
-- **`beru run`**: Executes `beru build` and immediately runs the resulting executable artifact.
+- **`beru build [filename]`**: Resolves dependencies, fetches sources, builds missing dependencies, and compiles the project (or the specific file) into the `target/` directory.
+- **`beru run [filename]`**: Executes `beru build` and immediately runs the resulting executable artifact.
 - **`beru clean`**: Removes the compiled `build/` directory and generated toolchain files, returning the project to a pristine state.
 - **`beru index update`**: Pulls the latest package definitions from the decentralized registry.
 - **`beru help`**: Displays the full list of commands and options.

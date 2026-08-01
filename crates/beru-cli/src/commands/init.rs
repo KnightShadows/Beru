@@ -36,29 +36,73 @@ pub fn exec(args: InitArgs) -> Result<()> {
         name,
     );
 
-    let manifest = format!(
-        r#"[package]
-name = "{name}"
-version = "0.1.0"
-cxx-std = "{cxx_std}"
-type = "{pkg_type}"
+    // Create directories if they don't exist
+    let _ = std::fs::create_dir_all(cwd.join("src"));
+    let _ = std::fs::create_dir_all(cwd.join("tests"));
 
-[dependencies]
+    if args.r#type == "library" || args.r#type == "header-only" {
+        let _ = std::fs::create_dir_all(cwd.join("include").join(&name));
+    }
 
-[dev-dependencies]
-
-[build]
-system = "cmake"
-"#,
-        name = name,
-        cxx_std = args.cxx_std,
-        pkg_type = args.r#type,
-    );
-
+    // Write Beru.toml
+    let manifest = super::new::generate_manifest(&name, &args.r#type, &args.cxx_std);
     std::fs::write(cwd.join("Beru.toml"), manifest).context("failed to write Beru.toml")?;
 
+    // Write CMakeLists.txt if it doesn't exist
+    if !cwd.join("CMakeLists.txt").exists() {
+        let cmake = super::new::generate_cmakelists(&name, &args.r#type);
+        let _ = std::fs::write(cwd.join("CMakeLists.txt"), cmake);
+    }
+
+    // Write source files if they don't exist
+    match args.r#type.as_str() {
+        "executable" => {
+            let main_path = cwd.join("src").join("main.cpp");
+            if !main_path.exists() {
+                let _ = std::fs::write(main_path, super::new::EXECUTABLE_MAIN);
+            }
+        }
+        "library" => {
+            let header_path = cwd
+                .join("include")
+                .join(&name)
+                .join(format!("{}.hpp", name));
+            if !header_path.exists() {
+                let header = super::new::library_header(&name);
+                let _ = std::fs::write(header_path, header);
+            }
+            let source_path = cwd.join("src").join(format!("{}.cpp", name));
+            if !source_path.exists() {
+                let source = super::new::library_source(&name);
+                let _ = std::fs::write(source_path, source);
+            }
+        }
+        "header-only" => {
+            let header_path = cwd
+                .join("include")
+                .join(&name)
+                .join(format!("{}.hpp", name));
+            if !header_path.exists() {
+                let header = super::new::header_only_lib(&name);
+                let _ = std::fs::write(header_path, header);
+            }
+        }
+        _ => {}
+    }
+
+    let gitignore_path = cwd.join(".gitignore");
+    if !gitignore_path.exists() {
+        let _ = std::fs::write(gitignore_path, super::new::GITIGNORE);
+    }
+
+    let test_path = cwd.join("tests").join("test_main.cpp");
+    if !test_path.exists() {
+        let test = super::new::generate_test(&name, &args.r#type);
+        let _ = std::fs::write(test_path, test);
+    }
+
     println!(
-        "{} Beru.toml created. Run `beru build` to build your project.",
+        "{} Beru project created. Run `beru build` to build your project.",
         style("Done:").green().bold()
     );
 

@@ -104,7 +104,7 @@ pub fn exec(args: NewArgs) -> Result<()> {
     Ok(())
 }
 
-fn generate_manifest(name: &str, pkg_type: &str, cxx_std: &str) -> String {
+pub(crate) fn generate_manifest(name: &str, pkg_type: &str, cxx_std: &str) -> String {
     format!(
         r#"[package]
 name = "{name}"
@@ -122,7 +122,7 @@ system = "cmake"
     )
 }
 
-fn generate_cmakelists(name: &str, pkg_type: &str) -> String {
+pub(crate) fn generate_cmakelists(name: &str, pkg_type: &str) -> String {
     let target_name = name.replace('-', "_");
     match pkg_type {
         "executable" => format!(
@@ -168,7 +168,7 @@ install(DIRECTORY include/ DESTINATION include)
     }
 }
 
-fn generate_test(name: &str, _pkg_type: &str) -> String {
+pub(crate) fn generate_test(name: &str, _pkg_type: &str) -> String {
     format!(
         r#"// {name} — test suite
 
@@ -183,7 +183,7 @@ int main() {{
     )
 }
 
-const EXECUTABLE_MAIN: &str = r#"#include <iostream>
+pub(crate) const EXECUTABLE_MAIN: &str = r#"#include <iostream>
 
 int main() {
     std::cout << "Hello from Beru!" << std::endl;
@@ -191,7 +191,7 @@ int main() {
 }
 "#;
 
-fn library_header(name: &str) -> String {
+pub(crate) fn library_header(name: &str) -> String {
     let guard = name.replace('-', "_").to_uppercase();
     format!(
         r#"#ifndef {guard}_HPP
@@ -213,7 +213,7 @@ std::string name();
     )
 }
 
-fn library_source(name: &str) -> String {
+pub(crate) fn library_source(name: &str) -> String {
     format!(
         r#"#include "{name}/{name}.hpp"
 
@@ -230,7 +230,7 @@ std::string name() {{
     )
 }
 
-fn header_only_lib(name: &str) -> String {
+pub(crate) fn header_only_lib(name: &str) -> String {
     let guard = name.replace('-', "_").to_uppercase();
     format!(
         r#"#ifndef {guard}_HPP
@@ -255,7 +255,7 @@ inline std::string name() {{
     )
 }
 
-const GITIGNORE: &str = r#"# Build artifacts
+pub(crate) const GITIGNORE: &str = r#"# Build artifacts
 build/
 target/
 

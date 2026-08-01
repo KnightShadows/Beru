@@ -1,6 +1,6 @@
 # Third-Party Licenses
 
-Beru is built on top of the excellent work of the open-source community. This file lists the third-party dependencies used in this project and their respective licenses.
+Beru is built on top of the excellent work of the open-source community. This file lists the third-party dependencies used in this project and their respective licenses. 
 
 ## adler2 (v2.0.1)
 A simple clean-room implementation of the Adler-32 checksum

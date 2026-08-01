@@ -30,6 +30,13 @@ C++ has historically suffered from fragmented build systems and difficult depend
 
 ## 2. Getting Started
 
+### System Requirements
+
+Before using Beru, ensure your system has the following installed and available in your `PATH`:
+- **Git**: Required to fetch the Beru Index and download third-party source code.
+- **CMake (>= 3.20)**: Beru orchestrates CMake under the hood to configure and build C++ code.
+- **A C++ Compiler**: A modern compiler like GCC, Clang, or MSVC (depending on your OS).
+
 ### Installation
 
 If you haven't installed Beru yet, the easiest way is via our installer scripts:

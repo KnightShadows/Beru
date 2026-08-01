@@ -30,6 +30,11 @@ The manual covers:
 
 ## 🚀 Quick Start
 
+### System Requirements
+- **Git**
+- **CMake** (>= 3.20)
+- **A C++ Compiler** (GCC, Clang, or MSVC)
+
 ### Installation
 
 **Linux & macOS**

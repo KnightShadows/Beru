@@ -11,7 +11,8 @@ Welcome to **The Beru Book**! This is the definitive guide to using Beru, the mo
 4. [The Registry & Index](#4-the-registry--index)
 5. [Recipes & Third-Party Code](#5-recipes--third-party-code)
 6. [Architecture & Build Engine](#6-architecture--build-engine)
-7. [CLI Reference](#7-cli-reference)
+7. [Multiple Binaries (Loose Files)](#7-multiple-binaries-loose-files)
+8. [CLI Reference](#8-cli-reference)
 
 ---
 
@@ -55,17 +56,20 @@ This creates a new folder with the following structure:
 ```text
 my_app/
 ├── Beru.toml       # The project manifest
+├── CMakeLists.txt  # Auto-generated CMake file
 ├── src/
 │   └── main.cpp    # Your main C++ source file
+└── tests/
+    └── test_main.cpp
 ```
 
 ### Initializing an Existing Project
 
-If you already have a folder with C++ source files and want to start managing it with Beru, navigate to the folder and run:
+If you already have an empty folder (or a folder with some C++ source files) and want to start managing it with Beru, navigate to the folder and run:
 ```bash
 beru init
 ```
-This will generate a `Beru.toml` file in the current directory.
+This will automatically generate a `Beru.toml` file and safely scaffold standard project files (like `src/main.cpp`, `CMakeLists.txt`, and `.gitignore`) in the current directory. Beru checks for existing files first, so it will **never overwrite your existing code**.
 
 ### Running the Project
 
@@ -139,7 +143,10 @@ To ensure you have access to the latest packages and versions, you should period
 ```bash
 beru index update
 ```
-This performs a fast `git pull` on the index repository stored in `~/.beru/index`.
+This performs a fast `git pull` on the official Beru registry. If you want to use a private or custom registry, you can pass the `--url` flag:
+```bash
+beru index update --url https://github.com/YourOrg/private_index.git
+```
 
 ### The Lockfile (`Beru.lock`)
 
@@ -190,7 +197,7 @@ Beru operates through a sophisticated, multi-stage orchestration engine (primari
 1. **Resolution Phase**: The `beru-manifest` and `beru-resolve` crates parse your manifest and use PubGrub to compute the dependency graph.
 2. **Fetch & Build Phase**: `beru-recipe` downloads the source code for all third-party libraries. If a compiled binary doesn't already exist in your global cache (`~/.beru/cache`), Beru invokes the local build system (e.g., CMake) to compile the library *in isolation*.
 3. **Orchestration Phase**: `beru-build` gathers all the `[export]` data from the compiled dependencies (include paths, static libraries, shared objects). It dynamically generates a `CMakeLists.txt` (and a custom CMake toolchain file) for *your* project, seamlessly injecting all the dependency flags.
-4. **Compilation Phase**: Finally, Beru invokes CMake on your project inside the `target/` directory. 
+4. **Compilation Phase**: Finally, Beru invokes CMake on your project inside the `build/` directory. 
 
 Because dependencies are built in isolation and cached by a hash of their version and build flags, changing your project's source code never causes a rebuild of your dependencies.
 
@@ -216,7 +223,7 @@ beru run day1.cpp
 ```
 *(You can also omit the extension: `beru run day1`)*
 
-Beru will instantly dynamically generate a target just for `day1.cpp`, compile it, and run it. The other files in the `src/` folder are completely ignored, keeping the build blazing fast.
+Beru will dynamically generate a target just for `day1.cpp`, compile it, and run it. The other files in the `src/` folder are completely ignored, keeping the build blazing fast.
 
 > [!IMPORTANT]
 > Because every loose `.cpp` file in `src/` is treated as a candidate executable, you cannot place shared helper files (like `utils.cpp` that don't have a `main()` function) directly in the `src/` folder. Shared C++ code should be placed in a subdirectory (e.g., `src/shared/utils.cpp`) to avoid linking errors.
@@ -227,13 +234,13 @@ Beru will instantly dynamically generate a target just for `day1.cpp`, compile i
 
 Beru provides a familiar, intuitive command-line interface.
 
-- **`beru new <name>`**: Creates a new C++ project directory with a default manifest and `src/main.cpp`.
-- **`beru init`**: Initializes an existing directory as a Beru project.
+- **`beru new <name>`**: Creates a new C++ project directory and automatically scaffolds standard files (`src/main.cpp`, `tests/`, `.gitignore`, `Beru.toml`).
+- **`beru init`**: Initializes the current directory as a Beru project. Safely generates `Beru.toml` and standard scaffolding files without overwriting existing code.
 - **`beru resolve`**: Computes the dependency graph and generates/updates the `Beru.lock` file.
-- **`beru build [filename]`**: Resolves dependencies, fetches sources, builds missing dependencies, and compiles the project (or the specific file) into the `target/` directory.
-- **`beru run [filename]`**: Executes `beru build` and immediately runs the resulting executable artifact.
+- **`beru index update [--url <git_url>]`**: Pulls the latest package definitions from the decentralized registry.
+- **`beru build [filename]`**: Resolves dependencies, fetches sources, builds missing dependencies, and compiles the project (or the specific file) into the `build/` directory.
+- **`beru run [filename] [-- args...]`**: Executes `beru build` and immediately runs the resulting executable artifact, optionally passing arguments to the binary.
 - **`beru clean`**: Removes the compiled `build/` directory and generated toolchain files, returning the project to a pristine state.
-- **`beru index update`**: Pulls the latest package definitions from the decentralized registry.
 - **`beru help`**: Displays the full list of commands and options.
 
 ---

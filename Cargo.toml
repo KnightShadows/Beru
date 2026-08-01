@@ -50,7 +50,7 @@ dirs = "6"
 
 # Versioning
 semver = { version = "1", features = ["serde"] }
-pubgrub = "0.2"
+pubgrub = "0.4"
 
 # Logging
 tracing = "0.1"

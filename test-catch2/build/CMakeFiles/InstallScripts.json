@@ -1,7 +1,6 @@
 {
-	"InstallScripts" : 
-	[
+	"InstallScripts": [
 		"/home/adityaanand/Downloads/Beru/test-catch2/build/cmake_install.cmake"
 	],
-	"Parallel" : false
+	"Parallel": false
 }

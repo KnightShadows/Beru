@@ -45,7 +45,7 @@ flate2 = "1"
 
 # Filesystem / platform
 tempfile = "3"
-which = "7"
+which = "8"
 dirs = "6"
 
 # Versioning

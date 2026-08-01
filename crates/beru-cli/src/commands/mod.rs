@@ -7,6 +7,7 @@ mod init;
 mod new;
 mod resolve;
 mod run;
+mod clean;
 
 /// Top-level Beru commands.
 #[derive(Debug, Subcommand)]
@@ -28,6 +29,9 @@ pub enum Command {
 
     /// Manage the package registry index
     Index(index::IndexArgs),
+
+    /// Remove build artifacts
+    Clean(clean::CleanArgs),
 }
 
 /// Dispatch a command.
@@ -39,5 +43,6 @@ pub fn run(cmd: Command) -> Result<()> {
         Command::Run(args) => run::exec(args),
         Command::Resolve(args) => resolve::exec(args),
         Command::Index(args) => index::exec(args),
+        Command::Clean(args) => clean::exec(args),
     }
 }

@@ -1,9 +1,8 @@
 use anyhow::Result;
 use beru_core::cache::BeruCache;
 use beru_manifest::{BeruLock, BeruManifest, LockedPackage};
-use pubgrub::range::Range;
-use pubgrub::solver::resolve;
-use pubgrub::version::SemanticVersion;
+use pubgrub::resolve;
+use pubgrub::SemanticVersion;
 use std::path::PathBuf;
 
 /// Compute the full dependency graph for a manifest using PubGrub.
@@ -22,14 +21,14 @@ pub fn resolve_graph(
     let root_pkg = "root".to_string();
     let root_version = SemanticVersion::new(0, 0, 0);
 
-    let mut root_deps = pubgrub::type_aliases::Map::default();
+    let mut root_deps = Vec::new();
     for name in manifest.dependencies.keys() {
-        root_deps.insert(name.clone(), Range::any());
+        root_deps.push((name.clone(), pubgrub::Range::full()));
     }
 
     provider.deps_cache.borrow_mut().insert(
         (root_pkg.clone(), root_version),
-        pubgrub::solver::Dependencies::Known(root_deps),
+        pubgrub::Dependencies::Available(root_deps.into_iter().collect()),
     );
 
     let solution = resolve(&provider, root_pkg, root_version)
@@ -48,10 +47,10 @@ pub fn resolve_graph(
         };
 
         let deps_cache = provider.deps_cache.borrow();
-        let deps_keys: Vec<String> = if let Some(pubgrub::solver::Dependencies::Known(deps)) =
+        let deps_keys: Vec<String> = if let Some(pubgrub::Dependencies::Available(deps)) =
             deps_cache.get(&(name.clone(), version))
         {
-            deps.keys().cloned().collect()
+            deps.iter().map(|(k, _)| k.clone()).collect()
         } else {
             Vec::new()
         };

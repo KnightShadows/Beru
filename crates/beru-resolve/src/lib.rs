@@ -5,10 +5,8 @@ use anyhow::Result;
 use beru_core::cache::BeruCache;
 use beru_manifest::Dependency;
 use beru_recipe::resolve_recipe;
-use pubgrub::range::Range;
-use pubgrub::solver::{Dependencies, DependencyProvider};
-use pubgrub::version::SemanticVersion;
-use std::borrow::Borrow;
+use pubgrub::DependencyProvider;
+use pubgrub::SemanticVersion;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -28,8 +26,10 @@ pub struct BeruProvider<'a> {
     pub sources: RefCell<HashMap<String, Dependency>>,
 
     /// Caches the dependencies for a specific package version to avoid re-fetching.
-    pub deps_cache:
-        RefCell<HashMap<(String, SemanticVersion), Dependencies<String, SemanticVersion>>>,
+    #[allow(clippy::type_complexity)]
+    pub deps_cache: RefCell<
+        HashMap<(String, SemanticVersion), pubgrub::Dependencies<String, pubgrub::Range<SemanticVersion>, String>>,
+    >,
 
     /// Available versions for a given package name.
     pub available_versions: RefCell<HashMap<String, Vec<SemanticVersion>>>,
@@ -136,49 +136,50 @@ impl<'a> BeruProvider<'a> {
     }
 }
 
-impl<'a> DependencyProvider<String, SemanticVersion> for BeruProvider<'a> {
-    fn choose_package_version<T: Borrow<String>, U: Borrow<Range<SemanticVersion>>>(
+impl<'a> DependencyProvider for BeruProvider<'a> {
+    type P = String;
+    type V = SemanticVersion;
+    type VS = pubgrub::Range<SemanticVersion>;
+    type Priority = usize;
+    type M = String;
+    type Err = std::io::Error;
+
+    fn prioritize(
         &self,
-        potential_packages: impl Iterator<Item = (T, U)>,
-    ) -> Result<(T, Option<SemanticVersion>), Box<dyn std::error::Error + 'static>> {
-        let mut best: Option<(T, Option<SemanticVersion>)> = None;
+        _package: &Self::P,
+        _range: &Self::VS,
+        _package_conflicts_counts: &pubgrub::PackageResolutionStatistics,
+    ) -> Self::Priority {
+        0
+    }
 
-        for (package, range) in potential_packages {
-            let pkg_name = package.borrow();
-            self.ensure_versions(pkg_name)
-                .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
+    fn choose_version(
+        &self,
+        package: &Self::P,
+        range: &Self::VS,
+    ) -> Result<Option<Self::V>, Self::Err> {
+        self.ensure_versions(package)
+            .map_err(|e| std::io::Error::other(e.to_string()))?;
 
-            let versions = self.available_versions.borrow();
+        let versions = self.available_versions.borrow();
+        if let Some(versions) = versions.get(package) {
             let mut valid_versions: Vec<SemanticVersion> = versions
-                .get(pkg_name)
-                .unwrap()
                 .iter()
-                .filter(|v| range.borrow().contains(v))
+                .filter(|v| range.contains(v))
                 .cloned()
                 .collect();
-
             valid_versions.sort();
-            valid_versions.reverse();
-
-            if let Some(highest) = valid_versions.first() {
-                return Ok((package, Some(*highest)));
-            } else {
-                best = Some((package, None));
-            }
-        }
-
-        if let Some(b) = best {
-            Ok(b)
+            Ok(valid_versions.pop())
         } else {
-            Err("No packages to choose from".into())
+            Ok(None)
         }
     }
 
     fn get_dependencies(
         &self,
-        package: &String,
-        version: &SemanticVersion,
-    ) -> Result<Dependencies<String, SemanticVersion>, Box<dyn std::error::Error + 'static>> {
+        package: &Self::P,
+        version: &Self::V,
+    ) -> Result<pubgrub::Dependencies<Self::P, Self::VS, Self::M>, Self::Err> {
         let key = (package.clone(), *version);
         if let Some(deps) = self.deps_cache.borrow().get(&key) {
             return Ok(deps.clone());
@@ -186,7 +187,7 @@ impl<'a> DependencyProvider<String, SemanticVersion> for BeruProvider<'a> {
 
         info!("Fetching dependencies for {} v{}", package, version);
 
-        let mut deps_map = pubgrub::type_aliases::Map::default();
+        let mut deps_map = pubgrub::Map::default();
 
         let version_str = version.to_string();
         let index_recipe_path = self
@@ -218,12 +219,12 @@ impl<'a> DependencyProvider<String, SemanticVersion> for BeruProvider<'a> {
 
         if let Some(r) = recipe {
             for dep_name in r.dependencies.keys() {
-                let range = Range::any();
+                let range = pubgrub::Range::full();
                 deps_map.insert(dep_name.clone(), range);
             }
         }
 
-        let deps = Dependencies::Known(deps_map);
+        let deps = pubgrub::Dependencies::Available(deps_map.into_iter().collect());
         self.deps_cache.borrow_mut().insert(key, deps.clone());
         Ok(deps)
     }

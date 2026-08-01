@@ -113,7 +113,7 @@ fn default_build_system() -> String {
 
 impl Recipe {
     /// Parse a `recipe.toml` from a string.
-    pub fn from_str(content: &str) -> Result<Self, anyhow::Error> {
+    pub fn parse_toml(content: &str) -> Result<Self, anyhow::Error> {
         let recipe: Self = toml::from_str(content)?;
         if recipe.build.system == "custom"
             && recipe.export.link_libs.is_empty()
@@ -131,7 +131,7 @@ impl Recipe {
     /// Parse a `recipe.toml` from a file path.
     pub fn from_file(path: &std::path::Path) -> anyhow::Result<Self> {
         let content = std::fs::read_to_string(path)?;
-        Self::from_str(&content)
+        Self::parse_toml(&content)
     }
 
     /// Whether this recipe describes a header-only package.
@@ -166,7 +166,7 @@ link-libs = ["fmt"]
 cmake-package = "fmt"
 cmake-targets = ["fmt::fmt"]
 "#;
-        let recipe = Recipe::from_str(toml).unwrap();
+        let recipe = Recipe::parse_toml(toml).unwrap();
         assert_eq!(recipe.package.name, "fmt");
         assert_eq!(recipe.package.version, "11.0.2");
         assert!(!recipe.is_header_only());
@@ -191,7 +191,7 @@ include-dirs = ["include"]
 cmake-package = "nlohmann_json"
 cmake-targets = ["nlohmann_json::nlohmann_json"]
 "#;
-        let recipe = Recipe::from_str(toml).unwrap();
+        let recipe = Recipe::parse_toml(toml).unwrap();
         assert!(recipe.is_header_only());
         assert!(recipe.export.link_libs.is_empty());
     }
@@ -217,7 +217,7 @@ commands = [
 include-dirs = ["include"]
 link-libs = ["boost_system"]
 "#;
-        let recipe = Recipe::from_str(toml).unwrap();
+        let recipe = Recipe::parse_toml(toml).unwrap();
         assert_eq!(recipe.build.system, "custom");
         assert_eq!(recipe.build.commands.len(), 2);
         assert_eq!(
@@ -240,7 +240,7 @@ url = "https://example.com/boost.tar.gz"
 system = "custom"
 commands = ["./do_something.sh"]
 "#;
-        let err = Recipe::from_str(toml).unwrap_err();
+        let err = Recipe::parse_toml(toml).unwrap_err();
         assert!(
             err.to_string()
                 .contains("must explicitly define an [export] section")

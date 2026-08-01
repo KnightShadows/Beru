@@ -31,7 +31,7 @@ pub struct LockedPackage {
 
 impl BeruLock {
     /// Parse a `Beru.lock` from a string.
-    pub fn from_str(content: &str) -> Result<Self, toml::de::Error> {
+    pub fn parse_toml(content: &str) -> Result<Self, toml::de::Error> {
         toml::from_str(content)
     }
 
@@ -39,7 +39,7 @@ impl BeruLock {
     pub fn from_dir(dir: &Path) -> anyhow::Result<Self> {
         let lock_path = dir.join("Beru.lock");
         let content = std::fs::read_to_string(&lock_path)?;
-        Ok(Self::from_str(&content)?)
+        Ok(Self::parse_toml(&content)?)
     }
 
     /// Serialize the lockfile to a string.
@@ -73,7 +73,7 @@ version = "1.14.1"
 source = "https://github.com/gabime/spdlog"
 dependencies = ["fmt"]
 "#;
-        let lock = BeruLock::from_str(toml).unwrap();
+        let lock = BeruLock::parse_toml(toml).unwrap();
         assert_eq!(lock.version, 1);
         assert_eq!(lock.packages.len(), 2);
         assert_eq!(lock.packages[0].name, "fmt");

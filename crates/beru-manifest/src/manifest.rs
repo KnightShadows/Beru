@@ -172,11 +172,11 @@ impl BeruManifest {
             path: path.to_path_buf(),
             source: e,
         })?;
-        Self::from_str(&content)
+        Self::parse_toml(&content)
     }
 
     /// Parse a `Beru.toml` from a string.
-    pub fn from_str(content: &str) -> Result<Self, ManifestError> {
+    pub fn parse_toml(content: &str) -> Result<Self, ManifestError> {
         let manifest: BeruManifest =
             toml::from_str(content).map_err(|e| ManifestError::Parse(e.to_string()))?;
         manifest.validate()?;
@@ -226,7 +226,7 @@ mod tests {
 name = "hello-world"
 version = "0.1.0"
 "#;
-        let manifest = BeruManifest::from_str(toml).unwrap();
+        let manifest = BeruManifest::parse_toml(toml).unwrap();
         assert_eq!(manifest.package.name, "hello-world");
         assert_eq!(manifest.package.version, "0.1.0");
         assert_eq!(manifest.package.cxx_std, "c++17");
@@ -266,7 +266,7 @@ lto = true
 optimization = "0"
 sanitizers = ["address", "undefined"]
 "#;
-        let manifest = BeruManifest::from_str(toml).unwrap();
+        let manifest = BeruManifest::parse_toml(toml).unwrap();
         assert_eq!(manifest.package.cxx_std, "c++20");
         assert_eq!(manifest.package.package_type, PackageType::Executable);
         assert_eq!(manifest.dependencies.len(), 2);
@@ -283,7 +283,7 @@ name = "bad-std"
 version = "0.1.0"
 cxx-std = "c++99"
 "#;
-        let result = BeruManifest::from_str(toml);
+        let result = BeruManifest::parse_toml(toml);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err(),
@@ -298,7 +298,7 @@ cxx-std = "c++99"
 name = "X"
 version = "0.1.0"
 "#;
-        let result = BeruManifest::from_str(toml);
+        let result = BeruManifest::parse_toml(toml);
         assert!(result.is_err());
     }
 

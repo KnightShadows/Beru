@@ -205,6 +205,7 @@ Beru provides a familiar, intuitive command-line interface.
 - **`beru resolve`**: Computes the dependency graph and generates/updates the `Beru.lock` file.
 - **`beru build`**: Resolves dependencies, fetches sources, builds missing dependencies, and compiles the project into the `target/` directory.
 - **`beru run`**: Executes `beru build` and immediately runs the resulting executable artifact.
+- **`beru clean`**: Removes the compiled `build/` directory and generated toolchain files, returning the project to a pristine state.
 - **`beru index update`**: Pulls the latest package definitions from the decentralized registry.
 - **`beru help`**: Displays the full list of commands and options.
 

@@ -29,24 +29,38 @@ pub fn exec(args: RunArgs) -> Result<()> {
         );
     }
 
+    let mut target = None;
+    let mut run_args = args.args.clone();
+
+    if let Some(first) = run_args.first() {
+        let stem = first.strip_suffix(".cpp").unwrap_or(first);
+        let src_file = project_dir.join("src").join(format!("{}.cpp", stem));
+        if src_file.exists() {
+            target = Some(stem.to_string());
+            run_args.remove(0); // Pop the target off so it doesn't get passed as an arg to the executable
+        }
+    }
+
+    let (resolved_target, _) = super::build::resolve_target(&project_dir, target.as_deref())?;
+
     let build_args = super::build::BuildArgs {
         profile: args.profile.clone(),
+        target: target.clone(),
     };
     super::build::exec(build_args)?;
 
-    let target_name = manifest.package.name.replace('-', "_");
     let build_dir = project_dir.join("build");
 
-    let exe_path = find_executable(&build_dir, &target_name)?;
+    let exe_path = find_executable(&build_dir, &resolved_target)?;
 
     println!(
         "  {} `{}`\n",
         style("Running").green().bold(),
-        manifest.package.name,
+        resolved_target,
     );
 
     let status = Command::new(&exe_path)
-        .args(&args.args)
+        .args(&run_args)
         .status()
         .with_context(|| format!("failed to run {}", exe_path.display()))?;
 

@@ -16,6 +16,9 @@ pub struct BuildArgs {
     /// Build profile to use
     #[arg(long, default_value = "debug")]
     pub profile: String,
+
+    /// Optional target filename (e.g., day1.cpp)
+    pub target: Option<String>,
 }
 
 pub fn exec(args: BuildArgs) -> Result<()> {
@@ -24,10 +27,32 @@ pub fn exec(args: BuildArgs) -> Result<()> {
     let manifest = BeruManifest::from_dir(&project_dir)
         .context("failed to parse Beru.toml (are you in a Beru project directory?)")?;
 
+    let mut resolved_target_name = manifest.package.name.replace('-', "_");
+
+    if manifest.package.package_type == beru_manifest::PackageType::Executable {
+        let (target_stem, show_warning) = resolve_target(&project_dir, args.target.as_deref())?;
+        resolved_target_name = target_stem.clone();
+
+        if show_warning {
+            println!(
+                "{} Multiple files found but no 'main.cpp'. Defaulting to '{}.cpp'.",
+                style("Warning:").yellow().bold(),
+                target_stem
+            );
+        }
+
+        let cmake_content = format!(
+            "cmake_minimum_required(VERSION 3.20)\nproject({} LANGUAGES CXX)\n\nadd_executable({} src/{}.cpp)\n",
+            target_stem, target_stem, target_stem
+        );
+        std::fs::write(project_dir.join("CMakeLists.txt"), cmake_content)
+            .context("failed to write dynamic CMakeLists.txt")?;
+    }
+
     println!(
         "{} {} v{} ({})",
         style("Building").green().bold(),
-        manifest.package.name,
+        resolved_target_name,
         manifest.package.version,
         manifest.package.cxx_std,
     );
@@ -87,7 +112,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
     println!(
         "  {} {} built successfully",
         style("Finished").green().bold(),
-        manifest.package.name,
+        resolved_target_name,
     );
 
     Ok(())
@@ -229,4 +254,55 @@ fn fetch_dependency_source(
             )
         }
     }
+}
+
+/// Resolve the correct target executable file from the src/ directory.
+pub fn resolve_target(project_dir: &Path, target_arg: Option<&str>) -> Result<(String, bool)> {
+    let src_dir = project_dir.join("src");
+    if !src_dir.exists() {
+        bail!("src/ directory not found in project");
+    }
+
+    let mut cpp_files = Vec::new();
+    for entry in std::fs::read_dir(&src_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file()
+            && path.extension().and_then(|s| s.to_str()) == Some("cpp")
+            && let Some(name) = path.file_stem().and_then(|s| s.to_str())
+        {
+            cpp_files.push(name.to_string());
+        }
+    }
+
+    if cpp_files.is_empty() {
+        bail!("no .cpp files found in src/");
+    }
+
+    // Scenario B: User explicitly requested a target
+    if let Some(t) = target_arg {
+        let stem = t.strip_suffix(".cpp").unwrap_or(t);
+        if cpp_files.contains(&stem.to_string()) {
+            return Ok((stem.to_string(), false));
+        } else {
+            bail!("target file '{}.cpp' not found in src/", stem);
+        }
+    }
+
+    // Scenario A: No arguments
+    if cpp_files.len() == 1 {
+        // Exactly 1 file
+        return Ok((cpp_files[0].clone(), false));
+    }
+
+    if cpp_files.contains(&"main".to_string()) {
+        // Multiple files, main.cpp exists
+        return Ok(("main".to_string(), false));
+    }
+
+    // Multiple files, no main.cpp
+    cpp_files.sort();
+    let default_target = cpp_files[0].clone();
+
+    Ok((default_target, true))
 }

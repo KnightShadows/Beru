@@ -20,7 +20,7 @@ repository = "https://github.com/KnightShadows/Beru"
 [workspace.dependencies]
 # Serialization
 serde = { version = "1", features = ["derive"] }
-toml = "0.8"
+toml = "1.1"
 toml_edit = "0.22"
 
 # CLI

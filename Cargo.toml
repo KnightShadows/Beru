@@ -10,6 +10,7 @@ members = [
 ]
 
 [workspace.package]
+name = "beru" 
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"

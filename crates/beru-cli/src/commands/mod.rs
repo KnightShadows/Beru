@@ -2,12 +2,12 @@ use anyhow::Result;
 use clap::Subcommand;
 
 mod build;
+mod clean;
 mod index;
 mod init;
 mod new;
 mod resolve;
 mod run;
-mod clean;
 
 /// Top-level Beru commands.
 #[derive(Debug, Subcommand)]

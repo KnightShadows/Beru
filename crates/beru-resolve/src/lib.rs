@@ -28,7 +28,10 @@ pub struct BeruProvider<'a> {
     /// Caches the dependencies for a specific package version to avoid re-fetching.
     #[allow(clippy::type_complexity)]
     pub deps_cache: RefCell<
-        HashMap<(String, SemanticVersion), pubgrub::Dependencies<String, pubgrub::Range<SemanticVersion>, String>>,
+        HashMap<
+            (String, SemanticVersion),
+            pubgrub::Dependencies<String, pubgrub::Range<SemanticVersion>, String>,
+        >,
     >,
 
     /// Available versions for a given package name.

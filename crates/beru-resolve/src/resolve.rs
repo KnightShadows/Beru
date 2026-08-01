@@ -1,8 +1,8 @@
 use anyhow::Result;
 use beru_core::cache::BeruCache;
 use beru_manifest::{BeruLock, BeruManifest, LockedPackage};
-use pubgrub::resolve;
 use pubgrub::SemanticVersion;
+use pubgrub::resolve;
 use std::path::PathBuf;
 
 /// Compute the full dependency graph for a manifest using PubGrub.

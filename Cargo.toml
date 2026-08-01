@@ -25,7 +25,7 @@ toml_edit = "0.22"
 
 # CLI
 clap = { version = "4", features = ["derive"] }
-indicatif = "0.17"
+indicatif = "0.18"
 console = "0.15"
 
 # Error handling

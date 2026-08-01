@@ -1,3 +1,0 @@
-/home/adityaanand/Downloads/Beru/test-opencv/build/CMakeFiles/test_opencv.dir
-/home/adityaanand/Downloads/Beru/test-opencv/build/CMakeFiles/edit_cache.dir
-/home/adityaanand/Downloads/Beru/test-opencv/build/CMakeFiles/rebuild_cache.dir

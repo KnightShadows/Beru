@@ -1,1 +1,0 @@
-/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/test_catch2.dir/link.d CMakeFiles/test_catch2.dir/src/main.cpp.o -o test_catch2  /home/adityaanand/.beru/cache/builds/b8a7e2179ced9fe2c0407138650f35b7/catch2-3.7.1/lib64/libCatch2Main.a /home/adityaanand/.beru/cache/builds/b8a7e2179ced9fe2c0407138650f35b7/catch2-3.7.1/lib64/libCatch2.a

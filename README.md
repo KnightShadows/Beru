@@ -12,30 +12,19 @@
 
 ## Installation
 
-### Linux & macOS (Automated Script)
+### Linux & macOS 
 The easiest way to install Beru on Linux or macOS is using our installer script. This will download the latest pre-compiled binary for your system:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/KnightShadows/Beru/main/install.sh | bash
 ```
 
-### macOS (Homebrew)
-*Coming soon!* Once published to Homebrew, you will be able to install via:
-```bash
-brew install KnightShadows/tap/beru
-```
 
-### Windows (Automated Script)
+### Windows
 The easiest way to install Beru on Windows is using our PowerShell installer script. Open PowerShell and run:
 
 ```powershell
 irm https://raw.githubusercontent.com/KnightShadows/Beru/main/install.ps1 | iex
-```
-
-### Windows (Winget)
-*Coming soon!* Once published to the Windows Package Manager, you will be able to install via:
-```powershell
-winget install KnightShadows.Beru
 ```
 
 ### Cargo (All Platforms)

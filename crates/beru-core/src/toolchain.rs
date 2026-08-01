@@ -237,14 +237,13 @@ pub fn build_abi_profile(
     let compiler = detect_compiler()?;
 
     if cxx_std == "20" || cxx_std == "23" || cxx_std == "26" {
-        if supports_concepts(&compiler, cxx_std)
-            && !features.contains(&"cxx_concepts".to_string()) {
-                features.push("cxx_concepts".to_string());
-            }
-        if supports_modules(&compiler, cxx_std)
-            && !features.contains(&"cxx_modules".to_string()) {
-                features.push("cxx_modules".to_string());
-            }
+        if supports_concepts(&compiler, cxx_std) && !features.contains(&"cxx_concepts".to_string())
+        {
+            features.push("cxx_concepts".to_string());
+        }
+        if supports_modules(&compiler, cxx_std) && !features.contains(&"cxx_modules".to_string()) {
+            features.push("cxx_modules".to_string());
+        }
     }
 
     features.sort();

@@ -90,13 +90,15 @@ fn find_file_recursive(dir: &std::path::Path, name: &str) -> Option<std::path::P
         let path = entry.path();
         if path.is_file() {
             if let Some(file_name) = path.file_name().and_then(|n| n.to_str())
-                && (file_name == name || file_name == format!("{name}.exe")) {
-                    return Some(path);
-                }
-        } else if path.is_dir()
-            && let Some(found) = find_file_recursive(&path, name) {
-                return Some(found);
+                && (file_name == name || file_name == format!("{name}.exe"))
+            {
+                return Some(path);
             }
+        } else if path.is_dir()
+            && let Some(found) = find_file_recursive(&path, name)
+        {
+            return Some(found);
+        }
     }
     None
 }

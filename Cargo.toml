@@ -12,7 +12,7 @@ members = [
 [workspace.package]
 name = "beru"
 version = "0.3.0"
-edition = "2026"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.85"
 description = "A modern, fast, and secure C++ package manager and build orchestrator."

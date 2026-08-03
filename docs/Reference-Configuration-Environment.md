@@ -1,22 +1,69 @@
-# Reference: Configuration & Environment
+# Reference: Configuration & Environment Variables
 
-Beru is designed to be zero-configuration. It strictly relies on the `Beru.toml` manifest in the root of your project. 
+Beru is designed to adhere to a "zero-configuration" philosophy. In a perfect world, a developer should be able to clone a repository, type `beru build`, and have the project compile perfectly without ever touching a system environment variable or creating global dotfiles.
 
-There are currently **no global configuration files** and **no environment variables** required to run Beru. 
+All project-specific logic belongs in the `Beru.toml` manifest. However, the Beru orchestrator itself has a small footprint on the host system, utilizing specific directories for caching and recognizing a select few environment variables for diagnostics.
 
-## Cache and Internal Directories
+This chapter details the exact environment footprint of the Beru CLI.
 
-Beru creates and manages two directories automatically:
+---
 
-1. **The Global Cache (`~/.beru/`)**:
-   - `~/.beru/index/`: A clone of the central Git registry containing all `recipe.toml` files.
-   - `~/.beru/cache/`: The global binary cache where fetched sources and compiled `.a`/`.so` artifacts are stored.
-   - Beru resolves paths relative to the user's home directory (e.g., `/home/username/.beru` on Linux, `C:\Users\Username\.beru` on Windows).
+## 1. Environment Variables
 
-2. **The Local Build Directory (`.beru/`)**:
-   - When you run `beru build`, Beru generates a hidden `.beru/` folder inside your project directory. 
-   - This folder contains the generated `CMakeLists.txt` (if applicable) and all temporary build artifacts (object files, CMake caches).
-   - This folder should be added to your `.gitignore`.
+Beru intentionally ignores environment variables that might alter the deterministic output of a build (like global `CXXFLAGS` injections, which would silently poison the binary cache and break reproducibility across machines). 
 
-*Note: Future versions of Beru may introduce environment variables (e.g., `BERU_HOME`) to override the global cache location.*
+It reads only one variable, used strictly for internal diagnostics.
 
+| Variable | Default | Purpose |
+| :--- | :--- | :--- |
+| `BERU_LOG` | `info` | Controls the verbosity of the internal `tracing` subsystem. It dictates how much information Beru prints to the standard error (`stderr`) stream during execution. |
+
+### 1.1. Deep Dive: The `BERU_LOG` Levels
+
+The `BERU_LOG` variable accepts standard logging levels: `error`, `warn`, `info`, `debug`, and `trace`.
+
+*   **`info` (Default):** Prints clean, user-facing status messages (e.g., "Resolving dependencies", "Compiling fmt v10.2.1"). This is designed to be unobtrusive and readable.
+*   **`debug`:** Provides insight into the orchestration pipeline. Beru will print the exact CMake commands it is executing under the hood, the directories it is generating toolchains into, and cache hits/misses. Use this if a build is failing and you suspect Beru is invoking CMake incorrectly.
+*   **`trace`:** Extremely verbose. This will dump the internal state of the PubGrub resolution algorithm, showing every constraint evaluated, every node visited in the dependency graph, and every mathematical deduction made to find a valid version. Use this only when debugging complex resolution conflicts.
+
+**Usage Example (Linux/macOS):**
+```bash
+BERU_LOG=debug beru build
+```
+
+---
+
+## 2. Directory Footprint
+
+Beru manages a strict separation between global state (caches and registries) and local state (project-specific build artifacts). 
+
+### 2.1. The Global Footprint (`~/.beru/`)
+
+All cross-project data is centralized in a hidden directory within the current user's home folder. On Linux and macOS, this is `~/.beru/`. On Windows, this is `C:\Users\<YourUsername>\.beru\`.
+
+This folder is subdivided into three critical domains:
+
+1.  **`~/.beru/bin/`**: The installation directory for the `beru` executable itself. This directory must be added to your system `PATH`.
+2.  **`~/.beru/index/`**: The local clone of the decentralized Git registry. This contains thousands of `recipe.toml` files. It is updated only when you explicitly run `beru index update`.
+3.  **`~/.beru/cache/`**: The global binary cache. When Beru compiles a third-party dependency like `fmt`, it installs the resulting static archives (`.a` / `.lib`) and header files into an isolated prefix within this folder. 
+
+**Cache Structure & Invalidation:**
+The `cache` directory is highly structured to prevent ABI collisions. Artifacts are stored under paths that include a hash of the compiler version, the target architecture, and the requested C++ standard. 
+
+If you compile `fmt` using GCC 11 with C++17, and later compile a different project requiring `fmt` using Clang 14 with C++20, Beru will not overwrite the old cache. It will compile `fmt` again under a different hash prefix, maintaining both binaries safely side-by-side.
+
+### 2.2. The Local Project Footprint
+
+When you execute `beru build` within a project directory, Beru generates two artifacts. Both should be aggressively ignored by version control.
+
+1.  **`.beru/` (The Orchestration Directory):** A hidden directory generated by Beru. It contains the `beru-toolchain.cmake` file. This file contains the dynamically synthesized CMake code that injects the include paths and linker flags from the global cache (`~/.beru/cache/`) into your local build environment.
+2.  **`build/` (The Output Directory):** The standard output directory generated by the underlying CMake invocation. It contains the final executable, object files, and CMake caches.
+
+**Source Control Best Practice:**
+Your `.gitignore` file should always contain:
+```text
+.beru/
+build/
+target/
+```
+Running `beru clean` will safely and recursively delete both of these directories, returning your project to a pristine state.

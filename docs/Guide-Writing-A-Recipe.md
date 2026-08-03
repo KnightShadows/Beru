@@ -1,56 +1,81 @@
-# Guide: Writing a Recipe
+# Guide: Authoring a Beru Recipe
 
-A **recipe** tells Beru how to fetch, build, and link a third-party C++ library that doesn't natively use Beru. Recipes are written in TOML (`recipe.toml`) and are stored in the Beru Index.
+The Beru ecosystem relies on a decentralized, community-driven index of package recipes. A recipe is a `recipe.toml` file that acts as a translator: it tells Beru how to take a legacy, raw CMake library from the internet and package it into the modern Beru dependency graph.
 
-Let's walk through packaging a popular library: `fmt`.
+This guide is an exhaustive walkthrough on how to author a robust, production-quality recipe. We will use the popular `{fmt}` formatting library as our case study.
 
-## 1. The Package Block
+---
 
-Every recipe starts with a `[package]` block defining the name and version.
+## 1. The Anatomy of a Recipe
+
+A `recipe.toml` is composed of four distinct sections, each responsible for a different phase of the orchestration pipeline:
+1.  `[package]`: Identification and versioning.
+2.  `[source]`: Where to securely download the code.
+3.  `[build]`: How to instruct the compiler.
+4.  `[export]`: How to expose the resulting artifacts to downstream consumers.
+
+### 1.1. The Package Section
+
+The `[package]` table is trivial but strict. The `name` must exactly match the directory name in the index, and the `version` must exactly match the subdirectory name.
 
 ```toml
 [package]
 name = "fmt"
-version = "10.2.1"
+version = "11.0.2"
 ```
 
-## 2. The Source Block
+*   **Rule:** The version string must be a strictly compliant Semantic Version (SemVer). If the upstream library uses a non-standard version like `11.0.2-release_final`, you must normalize it to `11.0.2` or `11.0.2-release.final` to satisfy the PubGrub algorithm.
 
-Next, tell Beru where to download the source code. Most recipes use a tarball release from GitHub.
+### 1.2. The Source Section
+
+Beru must download the source code before it can compile it. You have two options: a Git clone, or a compressed tarball archive. 
+
+**Tarballs are strongly preferred.** They are significantly faster to download, they consume less disk space (no `.git` history), and crucially, they can be cryptographically verified to prevent supply-chain attacks.
 
 ```toml
 [source]
-url = "https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.tar.gz"
-sha256 = "312151a2d12c8336f5fc2e6cf8e2b4ceada06e599d4ee1537f732a5dfb0e2719"
+url = "https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz"
+sha256 = "6f4db149c953538ed6168e92a832f913d31fc3877b088b9dd6326e133e9d1e39"
 ```
 
-> **Tip:** Always provide a `sha256` checksum for tarballs. Beru verifies this checksum to protect against supply-chain attacks and corrupted downloads.
+*   **Computing the SHA256:** You must provide the exact SHA256 checksum of the archive. Beru will refuse to build the package if the checksum mismatches, protecting users from hijacked DNS or compromised GitHub releases.
+    You can compute this locally on Linux or macOS using:
+    ```bash
+    curl -sL <URL> | sha256sum
+    ```
 
-Alternatively, you can fetch from a Git repository directly:
+If an upstream provider does not offer release archives, you may fallback to Git:
+
 ```toml
 [source]
 git = "https://github.com/fmtlib/fmt.git"
-tag = "10.2.1"
+tag = "11.0.2"
 ```
 
-## 3. The Build Block
+### 1.3. The Build Section
 
-How should Beru build this library? The vast majority of C++ libraries use CMake.
+This section instructs Beru on the underlying build system used by the library. Currently, Beru supports `cmake` and `header_only`.
 
 ```toml
 [build]
 system = "cmake"
 ```
 
-If the library is **Header-Only** (e.g., `nlohmann_json`), you can skip compilation entirely:
-```toml
-[build]
-system = "header_only"
+When `system = "cmake"` is specified, Beru will execute the equivalent of:
+```bash
+cmake -S <source_dir> -B <build_dir> -DCMAKE_INSTALL_PREFIX=<cache_dir>
+cmake --build <build_dir>
+cmake --install <build_dir>
 ```
 
-## 4. The Export Block (Crucial for CMake)
+**Header-Only Libraries:**
+If the library consists purely of `.h` or `.hpp` files and requires no compilation (e.g., `nlohmann_json`), use `system = "header_only"`. Beru will skip the expensive CMake compilation step entirely and simply copy the headers to the cache.
 
-When Beru builds a CMake library, it installs it into a private cache directory. To link it to your project, Beru needs to know the exact CMake targets the library exports, and where its include headers are located relative to the installation root.
+### 1.4. The Export Section (The Critical Step)
+
+This is where most recipes fail. After Beru compiles the library and installs it to the hidden cache directory, it must generate a toolchain file for the downstream user so their project can find the library.
+
+To do this, Beru needs to know what CMake targets the library generated.
 
 ```toml
 [export]
@@ -58,18 +83,25 @@ include_dirs = ["include"]
 cmake_targets = ["fmt::fmt"]
 ```
 
-## The Complete Recipe
+*   **`include_dirs`:** An array of directory paths relative to the installation root where the public header files reside. By standard convention, this is almost always `["include"]`.
+*   **`cmake_targets`:** This is the exact string a user would pass to `target_link_libraries()` in raw CMake. You must inspect the upstream library's documentation (or its `*Config.cmake` files) to find the correct exported target name. For `{fmt}`, it is `fmt::fmt`. For `spdlog`, it is `spdlog::spdlog`.
 
-Here is the complete `recipe.toml` for `fmt` v10.2.1:
+---
+
+## 2. Putting it all together
+
+The final, production-ready recipe for `{fmt}` looks like this:
 
 ```toml
+# ~/.beru/index/fmt/11.0.2/recipe.toml
+
 [package]
 name = "fmt"
-version = "10.2.1"
+version = "11.0.2"
 
 [source]
-url = "https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.tar.gz"
-sha256 = "312151a2d12c8336f5fc2e6cf8e2b4ceada06e599d4ee1537f732a5dfb0e2719"
+url = "https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz"
+sha256 = "6f4db149c953538ed6168e92a832f913d31fc3877b088b9dd6326e133e9d1e39"
 
 [build]
 system = "cmake"
@@ -79,5 +111,26 @@ include_dirs = ["include"]
 cmake_targets = ["fmt::fmt"]
 ```
 
-Once this file is placed in the Beru Index under `fmt/10.2.1/recipe.toml`, anyone can use `fmt = "10.2.1"` in their `Beru.toml`!
+## 3. Validating the Recipe Locally
 
+Before submitting your recipe to the global index, you must prove that it actually compiles and links correctly on your machine.
+
+1.  Create the appropriate directory in your local index cache:
+    ```bash
+    mkdir -p ~/.beru/index/fmt/11.0.2
+    ```
+2.  Copy your new `recipe.toml` into that directory.
+3.  Create a completely new, blank Beru project somewhere else on your filesystem:
+    ```bash
+    beru new recipe_test --type executable
+    cd recipe_test
+    ```
+4.  Add your new package to the `Beru.toml`:
+    ```toml
+    [dependencies]
+    fmt = "11.0.2"
+    ```
+5.  Write a minimal `src/main.cpp` that actually includes a header from the library and calls a function. This proves that the `include_dirs` and `cmake_targets` are correct.
+6.  Run `beru run`. 
+
+If the project compiles, links, and executes successfully, your recipe is solid and ready for the world. Proceed to the [Publishing Guide](Guide-Publishing-To-The-Registry.md).

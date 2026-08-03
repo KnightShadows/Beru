@@ -1,5 +1,5 @@
 [package]
-name = "beru-cli"
+name = "beru"
 description = "Beru command-line interface"
 version.workspace = true
 edition.workspace = true

@@ -5,7 +5,7 @@ $BinName = "beru.exe"
 
 Write-Host "Installing Beru for Windows..."
 
-$ReleaseUrl = "https://api.github.com/repos/$Repo/releases/latest"
+$ReleaseUrl = "https://api.github.com/repos/$Repo/releases/tags/v0.3.0"
 try {
     $Release = Invoke-RestMethod -Uri $ReleaseUrl
 } catch {

@@ -8,7 +8,7 @@ use beru_build::{build_project, generate_toolchain_cmake};
 use beru_core::cache::BeruCache;
 use beru_core::toolchain;
 use beru_manifest::{BeruManifest, Dependency};
-use beru_recipe::{beru_exe_dir, fetch_git, resolve_recipe};
+use beru_recipe::{beru_exe_dir, resolve_recipe};
 
 /// Arguments for `beru build`.
 #[derive(Debug, Args)]
@@ -41,12 +41,15 @@ pub fn exec(args: BuildArgs) -> Result<()> {
             );
         }
 
-        let cmake_content = format!(
-            "cmake_minimum_required(VERSION 3.20)\nproject({} LANGUAGES CXX)\n\nadd_executable({} src/{}.cpp)\n",
-            target_stem, target_stem, target_stem
-        );
-        std::fs::write(project_dir.join("CMakeLists.txt"), cmake_content)
-            .context("failed to write dynamic CMakeLists.txt")?;
+        let cmakelists_path = project_dir.join("CMakeLists.txt");
+        if !cmakelists_path.exists() {
+            let cmake_content = format!(
+                "cmake_minimum_required(VERSION 3.20)\nproject({} LANGUAGES CXX)\n\nadd_executable({} src/{}.cpp)\n",
+                target_stem, target_stem, target_stem
+            );
+            std::fs::write(cmakelists_path, cmake_content)
+                .context("failed to write dynamic CMakeLists.txt")?;
+        }
     }
 
     println!(
@@ -150,7 +153,7 @@ fn resolve_and_build_locked_dep(
 
     let source_dir = match opt_dep {
         Some(Dependency::Git(_)) | Some(Dependency::Path(_)) => {
-            fetch_dependency_source(name, opt_dep.unwrap(), cache, project_dir)?
+            fetch_dependency_source(name, opt_dep.unwrap(), pkg, cache, project_dir)?
         }
         Some(Dependency::Registry(_)) | Some(Dependency::Version(_)) | None => {
             let recipe = resolve_recipe(
@@ -166,14 +169,16 @@ fn resolve_and_build_locked_dep(
                 let src = r.source;
                 if let Some(url) = src.url {
                     if url.ends_with(".tar.gz") {
-                        let sha = src.sha256.expect("sha256 missing for tarball");
+                        let sha = pkg.checksum.clone().or(src.sha256).expect("sha256 missing for tarball");
                         let extracted = beru_recipe::fetch_tarball(cache, &url, &sha)?;
                         beru_recipe::find_source_root(&extracted)?
                     } else {
-                        beru_recipe::fetch_git(cache, &url, Some(version))?
+                        let pin = pkg.checksum.as_deref().or(src.tag.as_deref()).or(Some(version));
+                        beru_recipe::fetch_git(cache, &url, pin)?
                     }
                 } else if let Some(git) = src.git {
-                    beru_recipe::fetch_git(cache, &git, Some(version))?
+                    let pin = pkg.checksum.as_deref().or(src.tag.as_deref()).or(Some(version));
+                    beru_recipe::fetch_git(cache, &git, pin)?
                 } else {
                     bail!("Recipe for {} has no source", name);
                 }
@@ -220,17 +225,17 @@ fn resolve_and_build_locked_dep(
 fn fetch_dependency_source(
     name: &str,
     dep: &Dependency,
+    pkg: &beru_manifest::LockedPackage,
     cache: &BeruCache,
     project_dir: &Path,
 ) -> Result<PathBuf> {
     match dep {
         Dependency::Git(g) => {
-            let pin = g
-                .tag
-                .as_deref()
-                .or(g.branch.as_deref())
-                .or(g.rev.as_deref());
-            let repo_dir = fetch_git(cache, &g.git, pin)?;
+            let pin = pkg.checksum.as_deref()
+                .or(g.rev.as_deref())
+                .or(g.tag.as_deref())
+                .or(g.branch.as_deref());
+            let repo_dir = beru_recipe::fetch_git(cache, &g.git, pin)?;
             Ok(repo_dir)
         }
         Dependency::Path(p) => {

@@ -72,32 +72,47 @@ pub fn fetch_tarball(cache: &BeruCache, url: &str, expected_sha256: &str) -> Res
 pub fn fetch_git(cache: &BeruCache, url: &str, pin: Option<&str>) -> Result<PathBuf> {
     let repo_dir = cache.git_repo_dir(url);
 
-    if repo_dir.exists() {
-        debug!("git repo already cloned at {}", repo_dir.display());
-        if let Some(pin) = pin {
-            git_fetch_and_checkout(&repo_dir, pin)?;
-        }
-    } else {
+    if !repo_dir.exists() {
         info!("cloning {}", url);
         std::fs::create_dir_all(repo_dir.parent().unwrap())?;
 
-        let mut cmd = std::process::Command::new("git");
-        cmd.args(["clone", "--depth", "1"]);
+        let output = std::process::Command::new("git")
+            .args(["init"])
+            .arg(&repo_dir)
+            .output()
+            .context("failed to init git repo")?;
 
-        if let Some(pin) = pin {
-            cmd.args(["--branch", pin]);
+        if !output.status.success() {
+            bail!("git init failed");
         }
 
-        cmd.arg(url).arg(&repo_dir);
+        let output = std::process::Command::new("git")
+            .current_dir(&repo_dir)
+            .args(["remote", "add", "origin", url])
+            .output()
+            .context("failed to add git remote")?;
 
-        let output = cmd.output().context("failed to run git clone")?;
+        if !output.status.success() {
+            bail!("git remote add failed");
+        }
+    } else {
+        debug!("git repo already cloned at {}", repo_dir.display());
+    }
+
+    if let Some(pin) = pin {
+        git_fetch_and_checkout(&repo_dir, pin)?;
+    } else {
+        // Just pull default branch
+        let output = std::process::Command::new("git")
+            .current_dir(&repo_dir)
+            .args(["pull", "--depth", "1", "origin"])
+            .output()
+            .context("failed to pull default branch")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            bail!("git clone failed:\n{stderr}");
+            bail!("git pull failed:\n{stderr}");
         }
-
-        info!("cloned to {}", repo_dir.display());
     }
 
     Ok(repo_dir)
@@ -113,26 +128,19 @@ fn git_fetch_and_checkout(repo_dir: &Path, refspec: &str) -> Result<()> {
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        bail!("git fetch failed:\n{stderr}");
+        bail!("git fetch failed for {}:\n{}", refspec, stderr);
     }
 
+    // `FETCH_HEAD` will contain the fetched commit, whether refspec was a tag or SHA
     let output = std::process::Command::new("git")
-        .args(["checkout", refspec])
+        .args(["checkout", "--force", "FETCH_HEAD"])
         .current_dir(repo_dir)
         .output()
-        .context("failed to run git checkout")?;
+        .context("failed to run git checkout FETCH_HEAD")?;
 
     if !output.status.success() {
-        let output = std::process::Command::new("git")
-            .args(["checkout", "FETCH_HEAD"])
-            .current_dir(repo_dir)
-            .output()
-            .context("failed to run git checkout FETCH_HEAD")?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            bail!("git checkout failed:\n{stderr}");
-        }
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("git checkout failed:\n{stderr}");
     }
 
     Ok(())

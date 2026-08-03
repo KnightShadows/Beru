@@ -31,7 +31,7 @@ case "$OS" in
 esac
 
 echo "Fetching latest release data for $TARGET..."
-LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
+LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases/tags/v0.3.0")
 
 if echo "$LATEST_RELEASE" | grep -q "Not Found"; then
     echo "Error: No releases found for $REPO yet. You will need to build from source until the first release is tagged."

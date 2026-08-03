@@ -11,8 +11,8 @@ Beru brings the beloved **Cargo workflow** to the C++ ecosystem. It abstracts aw
 ## 🌟 Features
 
 - 📦 **Manifest-Driven**: Uses a simple, declarative `Beru.toml` manifest file for your project. No more sprawling `CMakeLists.txt`.
-- 🚀 **PubGrub Version Solving**: Utilizes the battle-tested [PubGrub algorithm](https://github.com/pubgrub-rs/pubgrub) to perfectly resolve your dependency graph without version conflicts.
-- 🏗️ **CMake Orchestration**: Automatically generates CMake toolchains and orchestrates the build process entirely behind the scenes.
+- 🚀 **PubGrub Version Solving**: Unlike vcpkg or Conan which often fail with cryptic errors on version conflicts, Beru uses the battle-tested [PubGrub algorithm](https://github.com/pubgrub-rs/pubgrub) to guarantee conflict-free version resolution and provide clear, human-readable explanations if dependencies are incompatible.
+- 🏗️ **CMake Orchestration**: Automatically generates CMake toolchains and orchestrates the build process entirely behind the scenes, but seamlessly integrates with your existing legacy `CMakeLists.txt`.
 - 🌐 **Global Index & Registry**: Fetches and builds third-party libraries using declarative `recipe.toml` files from the decentralized Beru registry.
 - ⚡ **Global Binary Cache**: Dependencies are compiled *once* and cached globally on your machine.
 - 🦀 **Powered by Rust**: Built for speed, safety, and reliability.

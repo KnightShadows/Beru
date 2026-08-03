@@ -169,15 +169,27 @@ fn resolve_and_build_locked_dep(
                 let src = r.source;
                 if let Some(url) = src.url {
                     if url.ends_with(".tar.gz") {
-                        let sha = pkg.checksum.clone().or(src.sha256).expect("sha256 missing for tarball");
+                        let sha = pkg
+                            .checksum
+                            .clone()
+                            .or(src.sha256)
+                            .expect("sha256 missing for tarball");
                         let extracted = beru_recipe::fetch_tarball(cache, &url, &sha)?;
                         beru_recipe::find_source_root(&extracted)?
                     } else {
-                        let pin = pkg.checksum.as_deref().or(src.tag.as_deref()).or(Some(version));
+                        let pin = pkg
+                            .checksum
+                            .as_deref()
+                            .or(src.tag.as_deref())
+                            .or(Some(version));
                         beru_recipe::fetch_git(cache, &url, pin)?
                     }
                 } else if let Some(git) = src.git {
-                    let pin = pkg.checksum.as_deref().or(src.tag.as_deref()).or(Some(version));
+                    let pin = pkg
+                        .checksum
+                        .as_deref()
+                        .or(src.tag.as_deref())
+                        .or(Some(version));
                     beru_recipe::fetch_git(cache, &git, pin)?
                 } else {
                     bail!("Recipe for {} has no source", name);
@@ -231,7 +243,9 @@ fn fetch_dependency_source(
 ) -> Result<PathBuf> {
     match dep {
         Dependency::Git(g) => {
-            let pin = pkg.checksum.as_deref()
+            let pin = pkg
+                .checksum
+                .as_deref()
                 .or(g.rev.as_deref())
                 .or(g.tag.as_deref())
                 .or(g.branch.as_deref());

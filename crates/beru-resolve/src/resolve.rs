@@ -57,7 +57,11 @@ pub fn resolve_graph(
 
         let mut checksum = None;
         if let Some(beru_manifest::Dependency::Git(g)) = provider.sources.borrow().get(&name) {
-            let pin = g.rev.as_deref().or(g.tag.as_deref()).or(g.branch.as_deref());
+            let pin = g
+                .rev
+                .as_deref()
+                .or(g.tag.as_deref())
+                .or(g.branch.as_deref());
             if let Some(p) = pin {
                 if let Ok(sha) = resolve_git_tag_to_sha(&g.git, p) {
                     checksum = Some(sha);
@@ -73,11 +77,16 @@ pub fn resolve_graph(
         ) {
             if let Some(sha) = &recipe.source.sha256 {
                 checksum = Some(sha.clone());
-            } else if let (Some(git_url), Some(git_tag)) = (&recipe.source.git, &recipe.source.tag) {
+            } else if let (Some(git_url), Some(git_tag)) = (&recipe.source.git, &recipe.source.tag)
+            {
                 if let Ok(sha) = resolve_git_tag_to_sha(git_url, git_tag) {
                     checksum = Some(sha);
                 } else {
-                    tracing::warn!("Failed to resolve git tag {} for {} to a commit SHA", git_tag, name);
+                    tracing::warn!(
+                        "Failed to resolve git tag {} for {} to a commit SHA",
+                        git_tag,
+                        name
+                    );
                 }
             }
         }

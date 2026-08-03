@@ -1,68 +1,103 @@
 <div align="center">
+  <img src="https://raw.githubusercontent.com/KnightShadows/Beru/main/assets/logo.png" alt="Beru Logo" width="120" height="120" style="margin-bottom: 20px;">
+  
   <h1>📦 Beru</h1>
-  <p><strong>A modern, fast, and declarative C++ package manager and build orchestrator, written in Rust.</strong></p>
+  <p><strong>A modern, declarative, and lightning-fast C++ package manager and build orchestrator.</strong></p>
+
   <a href="https://github.com/KnightShadows/Beru/actions"><img src="https://github.com/KnightShadows/Beru/workflows/CI/badge.svg" alt="Build Status"></a>
+  <a href="https://crates.io/crates/beru"><img src="https://img.shields.io/crates/v/beru.svg" alt="Crates.io"></a>
+  <a href="https://github.com/KnightShadows/Beru/blob/main/LICENSE-MIT"><img src="https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg" alt="License"></a>
+  
   <br/>
   <br/>
 </div>
 
-Beru brings the beloved **Cargo workflow** to the C++ ecosystem. It abstracts away the pain of CMake toolchains, finding dependencies, and resolving version conflicts, allowing you to focus purely on writing C++ code.
+## The C++ Package Manager You've Always Wanted
 
-## 🌟 Features
+C++ developers have suffered through sprawling `CMakeLists.txt` files, global environment variables, ABI mismatches, and cryptic linking errors for decades. **Beru changes everything.**
 
-- 📦 **Manifest-Driven**: Uses a simple, declarative `Beru.toml` manifest file for your project. No more sprawling `CMakeLists.txt`.
-- 🚀 **PubGrub Version Solving**: Unlike vcpkg or Conan which often fail with cryptic errors on version conflicts, Beru uses the battle-tested [PubGrub algorithm](https://github.com/pubgrub-rs/pubgrub) to guarantee conflict-free version resolution and provide clear, human-readable explanations if dependencies are incompatible.
-- 🏗️ **CMake Orchestration**: Automatically generates CMake toolchains and orchestrates the build process entirely behind the scenes, but seamlessly integrates with your existing legacy `CMakeLists.txt`.
-- 🌐 **Global Index & Registry**: Fetches and builds third-party libraries using declarative `recipe.toml` files from the decentralized Beru registry.
-- ⚡ **Global Binary Cache**: Dependencies are compiled *once* and cached globally on your machine.
-- 🦀 **Powered by Rust**: Built for speed, safety, and reliability.
+Written entirely in Rust, Beru brings the developer experience of Cargo and npm to the C++ ecosystem. It acts as an intelligent orchestrator, abstracting away the pain of CMake generation and dependency resolution so you can focus entirely on writing highly optimized native code.
 
-## 📖 Documentation
+## ✨ Core Features
 
-Everything you need to know about Beru is located in the comprehensive **[Beru Documentation](docs/Home.md)**. 
+* 📦 **Zero-Configuration Manifests**: Ditch CMake for your project definitions. Use a strongly-typed, human-readable `Beru.toml` file to declare your dependencies, C++ standard, and build profile.
+* 🧠 **Mathematical Dependency Resolution**: Beru integrates the battle-tested **[PubGrub algorithm](https://github.com/pubgrub-rs/pubgrub)**. When your dependencies conflict, Beru doesn't fail with a cryptic linker error; it outputs a step-by-step logical proof explaining exactly *why* the graph is unsolvable.
+* ⚡ **Decentralized, Instant Graph Resolution**: Say goodbye to slow API calls. Beru clones the global registry via Git. Resolution happens entirely offline in $O(1)$ time.
+* 🛡️ **Cryptographic Binary Caching**: Third-party libraries are compiled exactly once. Their resulting `.a`/`.lib` artifacts and headers are globally cached under strict cryptographic hashes of your compiler version and requested C++ standard, completely eliminating ABI poisoning.
+* 🔌 **Seamless CMake Integration**: While Beru handles the orchestration, it generates standard `cmake` toolchain files under the hood. It integrates perfectly with your favorite IDEs (CLion, VSCode, Visual Studio).
 
-The manual covers:
-- Getting Started (Installation & Creating Projects)
-- Deep Dive into the `Beru.toml` Manifest
-- Understanding the Global Package Registry
-- How to write `recipe.toml` files for third-party libraries
-- Full CLI Reference
+---
 
 ## 🚀 Quick Start
 
-### System Requirements
-- **Git**
-- **CMake** (>= 3.20)
-- **A C++ Compiler** (GCC, Clang, or MSVC)
+### 1. Installation
 
-### Installation
+Beru is distributed as a single, statically linked binary.
 
-**Linux & macOS**
+**Linux & macOS:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/KnightShadows/Beru/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/KnightShadows/Beru/main/install.sh | bash
 ```
 
-**Windows** (Open PowerShell)
+**Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/KnightShadows/Beru/main/install.ps1 | iex
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/KnightShadows/Beru/main/install.ps1 -OutFile install.ps1; .\install.ps1
 ```
 
-### Your First Project
+*(Alternatively, install directly via Cargo: `cargo install beru`)*
+
+### 2. Scaffold a New Project
 
 ```bash
-beru new my_project
-cd my_project
+# Create a new C++20 executable project
+beru new my_engine --type executable --cxx-std c++20
+cd my_engine
+```
+
+### 3. Add Dependencies
+
+Edit your `Beru.toml`:
+
+```toml
+[package]
+name = "my_engine"
+version = "0.1.0"
+type = "executable"
+cxx-std = "c++20"
+
+[dependencies]
+fmt = "11.0.2"
+spdlog = "1.14.1"
+```
+
+### 4. Build and Run
+
+```bash
 beru run
 ```
-It's that easy.
+*Beru will instantly resolve the PubGrub graph, download the release tarballs, verify their SHA-256 signatures, compile them using your system's compiler, cache the binaries, synthesize a CMake toolchain, compile your `my_engine` source code, and run the resulting executable.*
+
+---
+
+## 📖 The Beru Book (Documentation)
+
+We believe world-class software requires world-class documentation. 
+
+Everything you need to master Beru—from migrating legacy Conan/vcpkg projects, to authoring new recipes for the global index, to understanding the internal Rust architecture—is covered extensively in the **[Beru Documentation](docs/Home.md)**.
+
+*   [**Getting Started Guide**](docs/Getting-Started.md)
+*   [**Manifest (`Beru.toml`) Reference**](docs/Reference-Manifest-BeruToml.md)
+*   [**Command Line Interface Reference**](docs/Reference-CLI.md)
+*   [**Architecture & PubGrub Concepts**](docs/Architecture.md)
+
+---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) to learn how to set up the development environment and submit pull requests.
+Beru is an open-source project driven by the C++ and Rust communities. Whether you want to package a new C++ library for the global index or hack on the core Rust orchestrator, we welcome your PRs!
+
+Please read our comprehensive **[Contributing Guide](docs/Contributing.md)** before submitting code.
 
 ## 📄 License
 
-Beru is dual-licensed under the terms of both the **MIT License** and the **Apache License (Version 2.0)**. 
-See the `LICENSE-MIT` and `LICENSE-APACHE` files for details.
-
-Copyright (c) 2026 KnightShadows
+Beru is dual-licensed under either the **[MIT License](LICENSE-MIT)** or the **[Apache License, Version 2.0](LICENSE-APACHE)**, at your option.

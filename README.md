@@ -19,7 +19,7 @@ Beru brings the beloved **Cargo workflow** to the C++ ecosystem. It abstracts aw
 
 ## 📖 Documentation
 
-Everything you need to know about Beru is located in the comprehensive **[Beru User Manual](USER_MANUAL.md)**. 
+Everything you need to know about Beru is located in the comprehensive **[Beru Documentation](docs/Home.md)**. 
 
 The manual covers:
 - Getting Started (Installation & Creating Projects)

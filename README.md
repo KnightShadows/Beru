@@ -1,6 +1,6 @@
-<!-- <div align="center">
-  <img src="https://raw.githubusercontent.com/KnightShadows/Beru/main/assets/logo.png" alt="Beru Logo" width="120" height="120" style="margin-bottom: 20px;">
-   -->
+<div align="center">
+  <img src="assets/logo.png" alt="Beru Logo" width="120" height="120" style="margin-bottom: 20px;">
+
   <h1>📦 Beru</h1>
   <p><strong>A modern, declarative, and lightning-fast C++ package manager and build orchestrator.</strong></p>
 

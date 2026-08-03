@@ -43,9 +43,23 @@ The resulting artifact is placed in the standard `build/` output directory.
 
 ## 3. Options and Flags
 
-This command currently takes no options or flags. 
+### `[TARGET]` (Optional Positional Argument)
+If your `src/` directory contains multiple `.cpp` files, Beru defaults to compiling `main.cpp` (if it exists) or the alphabetically first file. You can override this behavior by explicitly providing a target name.
 
-The build behavior (optimization levels, static vs. shared libraries, sanitizers) must be configured explicitly in the `Beru.toml` manifest via the `[build]` and `[profile.*]` sections. This ensures that a project builds identically across all developer machines, rather than relying on ephemeral command-line flags.
+```bash
+beru build day1
+```
+
+### `--profile <PROFILE>`
+**Default:** `debug`
+
+Selects the build profile defined in your `Beru.toml` manifest to use for this compilation. By default, Beru looks for the `[profile.debug]` section. To invoke a highly optimized release build, you must specify the release profile.
+
+```bash
+beru build --profile release
+```
+
+*Note: Attributes like static vs. shared libraries, sanitizers, and optimization levels are defined inside the `Beru.toml` profile, ensuring the project builds identically across developer machines rather than relying on disparate CLI flags.*
 
 ---
 

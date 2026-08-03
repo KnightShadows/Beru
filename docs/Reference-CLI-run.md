@@ -29,9 +29,23 @@ If you attempt to invoke `beru run` within a project defined as `type = "library
 
 ## 3. Options and Flags
 
-This command currently takes no options or flags. 
+### `--profile <PROFILE>`
+**Default:** `debug`
 
-*(Future versions of Beru will introduce a `--` separator allowing you to pass arbitrary runtime arguments directly to the spawned child process, e.g., `beru run -- --config=prod.json`).*
+Selects the build profile to use. This operates identically to `beru build --profile`. If you wish to benchmark your application, you should always run the release profile.
+
+```bash
+beru run --profile release
+```
+
+### `[ARGS]...` (Trailing Arguments)
+Any positional arguments appended to the command will be passed transparently to your spawned executable.
+
+```bash
+beru run --profile release -- --config prod.json --port 8080
+```
+
+*Note on Targets:* If your `src/` directory contains multiple executables (e.g., `day1.cpp` and `day2.cpp`), Beru will attempt to parse the first trailing argument as a target if it matches a source file. For example, `beru run day2` will compile and execute `src/day2.cpp`.
 
 ---
 

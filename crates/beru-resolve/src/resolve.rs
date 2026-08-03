@@ -48,7 +48,7 @@ pub fn resolve_graph(
 
         let deps_cache = provider.deps_cache.borrow();
         let deps_keys: Vec<String> = if let Some(pubgrub::Dependencies::Available(deps)) =
-            deps_cache.get(&(name.clone(), version.clone()))
+            deps_cache.get(&(name.clone(), version))
         {
             deps.iter().map(|(k, _)| k.clone()).collect()
         } else {

@@ -16,8 +16,12 @@
 * [CLI Reference](Reference-CLI.md)
   * [`beru new`](Reference-CLI-new.md)
   * [`beru init`](Reference-CLI-init.md)
+  * [`beru add`](Reference-CLI-add.md)
+  * [`beru tree`](Reference-CLI-tree.md)
   * [`beru resolve`](Reference-CLI-resolve.md)
+  * [`beru check`](Reference-CLI-check.md)
   * [`beru build`](Reference-CLI-build.md)
+  * [`beru test`](Reference-CLI-test.md)
   * [`beru run`](Reference-CLI-run.md)
   * [`beru index update`](Reference-CLI-index-update.md)
 

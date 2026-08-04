@@ -52,6 +52,11 @@ pub fn exec(args: RunArgs) -> Result<()> {
                 // Auto-edit CMakeLists.txt if target is missing
                 let rel_path = std::path::Path::new("src").join(format!("{}.cpp", stem));
                 auto_append_target(&project_dir, stem, &rel_path)?;
+            } else {
+                bail!(
+                    "source file '{}' not found in current directory or src/ directory",
+                    first
+                );
             }
         }
     }

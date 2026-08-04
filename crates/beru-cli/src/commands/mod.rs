@@ -9,6 +9,7 @@ pub mod init;
 pub mod new;
 pub mod resolve;
 pub mod run;
+pub mod tree;
 
 /// Top-level Beru commands.
 #[derive(Debug, Subcommand)]
@@ -36,6 +37,9 @@ pub enum Command {
 
     /// Add a dependency to Beru.toml
     Add(add::AddArgs),
+
+    /// Display a tree of dependencies
+    Tree(tree::TreeArgs),
 }
 
 /// Dispatch a command.
@@ -49,5 +53,6 @@ pub fn run(cmd: Command) -> Result<()> {
         Command::Index(args) => index::exec(args),
         Command::Clean(args) => clean::exec(args),
         Command::Add(args) => add::exec(args),
+        Command::Tree(args) => tree::exec(args),
     }
 }

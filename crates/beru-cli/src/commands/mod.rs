@@ -1,13 +1,14 @@
 use anyhow::Result;
 use clap::Subcommand;
 
-mod build;
-mod clean;
-mod index;
-mod init;
-mod new;
-mod resolve;
-mod run;
+pub mod add;
+pub mod build;
+pub mod clean;
+pub mod index;
+pub mod init;
+pub mod new;
+pub mod resolve;
+pub mod run;
 
 /// Top-level Beru commands.
 #[derive(Debug, Subcommand)]
@@ -32,6 +33,9 @@ pub enum Command {
 
     /// Remove build artifacts
     Clean(clean::CleanArgs),
+
+    /// Add a dependency to Beru.toml
+    Add(add::AddArgs),
 }
 
 /// Dispatch a command.
@@ -44,5 +48,6 @@ pub fn run(cmd: Command) -> Result<()> {
         Command::Resolve(args) => resolve::exec(args),
         Command::Index(args) => index::exec(args),
         Command::Clean(args) => clean::exec(args),
+        Command::Add(args) => add::exec(args),
     }
 }

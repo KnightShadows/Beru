@@ -1,3 +1,4 @@
+mod add;
 mod build;
 mod init;
 mod new;

@@ -31,7 +31,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
 
     if manifest.package.package_type == beru_manifest::PackageType::Executable {
         let (target_stem, show_warning) = resolve_target(&project_dir, args.target.as_deref())?;
-        
+
         if target_stem != "main" {
             resolved_target_name = target_stem.clone();
         }

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Beru Pre-Push Hook
+# This script ensures that code is correctly formatted, linted, and all unit/integration tests pass
+# before allowing a push to the remote repository.
+
+echo "========================================="
+echo "📦 Running Beru Pre-Push Verifications"
+echo "========================================="
+
+echo "➡️  Checking Formatting (cargo fmt)..."
+if ! cargo fmt --all -- --check; then
+    echo "❌ ERROR: Code is not formatted properly."
+    echo "💡 Fix: Run 'cargo fmt --all' to automatically format your code."
+    exit 1
+fi
+echo "✅ Formatting passed."
+
+echo "➡️  Checking Lints (cargo clippy)..."
+if ! cargo clippy --all-targets --all-features -- -D warnings; then
+    echo "❌ ERROR: Clippy found warnings or errors."
+    echo "💡 Fix: Resolve the clippy warnings above."
+    exit 1
+fi
+echo "✅ Lints passed."
+
+echo "➡️  Running Test Suite (cargo test)..."
+if ! cargo test; then
+    echo "❌ ERROR: Test suite (unit + E2E integration) failed."
+    echo "💡 Fix: Resolve the failing tests before pushing."
+    exit 1
+fi
+echo "✅ All tests passed!"
+
+echo "========================================="
+echo "🚀 Pre-Push checks successful! Pushing..."
+echo "========================================="
+
+exit 0

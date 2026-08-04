@@ -55,6 +55,11 @@ Beru is divided into several specialized crates to maintain separation of concer
 ### 2.3. The Pull Request Checklist
 The Beru core team enforces strict CI checks. Before opening a PR, you must run the following locally and ensure they pass:
 
+0.  **Git Hooks (Required):** You must configure your local git to use our strict pre-push hooks. This guarantees you never push broken code.
+    ```bash
+    git config core.hooksPath .githooks
+    ```
+
 1.  **Formatting:** We use standard `rustfmt`.
     ```bash
     cargo fmt --all

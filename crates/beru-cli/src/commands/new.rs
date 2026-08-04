@@ -123,7 +123,7 @@ system = "cmake"
 }
 
 pub(crate) fn generate_cmakelists(name: &str, pkg_type: &str) -> String {
-    let target_name = name.replace('-', "_");
+    let target_name = name;
     match pkg_type {
         "executable" => format!(
             r#"cmake_minimum_required(VERSION 3.20)

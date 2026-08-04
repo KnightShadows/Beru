@@ -27,11 +27,14 @@ pub fn exec(args: BuildArgs) -> Result<()> {
     let manifest = BeruManifest::from_dir(&project_dir)
         .context("failed to parse Beru.toml (are you in a Beru project directory?)")?;
 
-    let mut resolved_target_name = manifest.package.name.replace('-', "_");
+    let mut resolved_target_name = manifest.package.name.clone();
 
     if manifest.package.package_type == beru_manifest::PackageType::Executable {
         let (target_stem, show_warning) = resolve_target(&project_dir, args.target.as_deref())?;
-        resolved_target_name = target_stem.clone();
+        
+        if target_stem != "main" {
+            resolved_target_name = target_stem.clone();
+        }
 
         if show_warning {
             println!(

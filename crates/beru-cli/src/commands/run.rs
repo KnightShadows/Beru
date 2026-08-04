@@ -57,6 +57,10 @@ pub fn exec(args: RunArgs) -> Result<()> {
     }
 
     let (resolved_target, _) = super::build::resolve_target(&project_dir, target.as_deref())?;
+    let mut actual_target_name = resolved_target.clone();
+    if resolved_target == "main" {
+        actual_target_name = manifest.package.name.clone();
+    }
 
     let build_args = super::build::BuildArgs {
         profile: args.profile.clone(),
@@ -66,12 +70,12 @@ pub fn exec(args: RunArgs) -> Result<()> {
 
     let build_dir = project_dir.join("build");
 
-    let exe_path = find_executable(&build_dir, &resolved_target)?;
+    let exe_path = find_executable(&build_dir, &actual_target_name)?;
 
     println!(
         "  {} `{}`\n",
         style("Running").green().bold(),
-        resolved_target,
+        actual_target_name,
     );
 
     let status = Command::new(&exe_path)

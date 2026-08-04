@@ -130,6 +130,7 @@ pub(crate) fn generate_cmakelists(name: &str, pkg_type: &str) -> String {
 project({target_name} LANGUAGES CXX)
 
 add_executable({target_name} src/main.cpp)
+beru_link_dependencies({target_name})
 "#
         ),
         "library" => format!(
@@ -137,6 +138,7 @@ add_executable({target_name} src/main.cpp)
 project({target_name} LANGUAGES CXX)
 
 add_library({target_name} src/{name}.cpp)
+beru_link_dependencies({target_name})
 target_include_directories({target_name}
     PUBLIC
         $<BUILD_INTERFACE:${{CMAKE_CURRENT_SOURCE_DIR}}/include>
@@ -155,6 +157,7 @@ install(DIRECTORY include/ DESTINATION include)
 project({target_name} LANGUAGES CXX)
 
 add_library({target_name} INTERFACE)
+beru_link_dependencies({target_name})
 target_include_directories({target_name}
     INTERFACE
         $<BUILD_INTERFACE:${{CMAKE_CURRENT_SOURCE_DIR}}/include>

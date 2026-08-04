@@ -86,6 +86,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
     };
 
     let mut prefix_paths: Vec<PathBuf> = Vec::new();
+    let mut cmake_deps: Vec<beru_build::CMakeDependency> = Vec::new();
 
     if !lockfile.packages.is_empty() {
         println!("{} dependencies...", style("Building").cyan().bold(),);
@@ -97,6 +98,26 @@ pub fn exec(args: BuildArgs) -> Result<()> {
         let install_prefix =
             resolve_and_build_locked_dep(pkg, opt_dep, &cache, &abi_hash, &project_dir)?;
         prefix_paths.push(install_prefix);
+
+        let recipe = resolve_recipe(
+            &pkg.name,
+            Some(&pkg.version),
+            &project_dir,
+            beru_exe_dir().as_deref(),
+            Some(&cache.recipes_dir()),
+            Some(&cache.index_dir()),
+        )?;
+
+        if let Some((r, _)) = recipe {
+            let mut targets = r.export.cmake_targets.clone();
+            if targets.is_empty() {
+                targets = r.export.link_libs.clone();
+            }
+            cmake_deps.push(beru_build::CMakeDependency {
+                package_name: r.export.cmake_package.clone(),
+                targets,
+            });
+        }
     }
 
     let toolchain_path = project_dir.join("beru-toolchain.cmake");
@@ -106,6 +127,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
         &manifest.package.cxx_std,
         &args.profile,
         &prefix_refs,
+        &cmake_deps,
     )?;
 
     let build_dir = project_dir.join("build");

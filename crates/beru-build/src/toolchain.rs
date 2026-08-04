@@ -2,6 +2,14 @@ use anyhow::{Context, Result};
 use std::path::Path;
 use tracing::info;
 
+/// Metadata about a dependency for CMake linking.
+pub struct CMakeDependency {
+    /// The CMake package name to find (e.g. `fmt`).
+    pub package_name: Option<String>,
+    /// The CMake targets to link (e.g. `fmt::fmt`).
+    pub targets: Vec<String>,
+}
+
 /// Generate a `beru-toolchain.cmake` file that wires Beru-managed
 /// dependencies into a user's CMake project.
 ///
@@ -9,6 +17,7 @@ use tracing::info;
 /// - Prepends each dependency's install prefix to `CMAKE_PREFIX_PATH`
 /// - Sets `CMAKE_CXX_STANDARD` from the manifest's `cxx-std`
 /// - Sets build type and optimization flags from the profile
+/// - Defines `beru_link_dependencies()` to auto-link `cmake_deps`
 ///
 /// Users invoke their CMake build with:
 /// ```sh
@@ -19,6 +28,7 @@ pub fn generate_toolchain_cmake(
     cxx_std: &str,
     build_type: &str,
     prefix_paths: &[&Path],
+    cmake_deps: &[CMakeDependency],
 ) -> Result<()> {
     let cxx_standard_number = cxx_std_to_number(cxx_std);
 
@@ -56,7 +66,26 @@ pub fn generate_toolchain_cmake(
     }
 
     content.push_str("# Set RPATH for installed binaries\n");
-    content.push_str("set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE BOOL \"\")\n");
+    content.push_str("set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE BOOL \"\")\n\n");
+
+    content.push_str("# ---------------------------------------------------------\n");
+    content.push_str("# Beru Magic Macro: Automatically link all dependencies\n");
+    content.push_str("# ---------------------------------------------------------\n");
+    content.push_str("macro(beru_link_dependencies TARGET_NAME)\n");
+    
+    // Sort dependencies for deterministic output
+    let mut sorted_deps = cmake_deps.iter().collect::<Vec<_>>();
+    sorted_deps.sort_by_key(|d| d.package_name.as_deref().unwrap_or(""));
+    
+    for dep in sorted_deps {
+        if let Some(pkg) = &dep.package_name {
+            content.push_str(&format!("    find_package({} REQUIRED)\n", pkg));
+        }
+        for target in &dep.targets {
+            content.push_str(&format!("    target_link_libraries(${{TARGET_NAME}} PRIVATE {})\n", target));
+        }
+    }
+    content.push_str("endmacro()\n\n");
 
     std::fs::write(output_path, &content)
         .with_context(|| format!("failed to write {}", output_path.display()))?;
@@ -97,7 +126,7 @@ mod tests {
         let path = dir.path().join("beru-toolchain.cmake");
         let prefix = PathBuf::from("/home/user/.beru/cache/builds/abc123/fmt-11.0.2");
 
-        generate_toolchain_cmake(&path, "c++20", "release", &[prefix.as_path()]).unwrap();
+        generate_toolchain_cmake(&path, "c++20", "release", &[prefix.as_path()], &[]).unwrap();
 
         let content = std::fs::read_to_string(&path).unwrap();
         assert!(content.contains("CMAKE_CXX_STANDARD 20"));

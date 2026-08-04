@@ -156,6 +156,18 @@ Hello from Beru!
 
 Congratulations! You have successfully compiled and executed a C++ application managed by Beru.
 
+### 4.2. Ad-Hoc Execution (Zero-Configuration Targets)
+
+Beru brings the effortless script-execution experience of Cargo or UV to C++. 
+
+If you want to run a quick test script or a standalone file (e.g., for competitive programming or Advent of Code), you do **not** need to manually edit your `CMakeLists.txt`. Simply pass the file path to `beru run`:
+
+```bash
+beru run src/my_script.cpp
+```
+
+Beru will detect that `my_script.cpp` is not in your `CMakeLists.txt` and will safely auto-append it for you. Crucially, it will invoke a special `beru_link_dependencies` macro, which means `my_script.cpp` immediately has access to every library you've added to `Beru.toml`!
+
 ---
 
 ## 5. Cleaning Up

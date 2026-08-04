@@ -21,6 +21,7 @@ Written entirely in Rust, Beru brings the developer experience of Cargo and npm 
 ## ✨ Core Features
 
 * 📦 **Zero-Configuration Manifests**: Ditch CMake for your project definitions. Use a strongly-typed, human-readable `Beru.toml` file to declare your dependencies, C++ standard, and build profile.
+* 🏃 **Ad-Hoc Execution**: Need to run a quick script or competitive programming file? Run `beru run script.cpp` and Beru will auto-configure CMake and magically link all your dependencies for you!
 * 🧠 **Mathematical Dependency Resolution**: Beru integrates the battle-tested **[PubGrub algorithm](https://github.com/pubgrub-rs/pubgrub)**. When your dependencies conflict, Beru doesn't fail with a cryptic linker error; it outputs a step-by-step logical proof explaining exactly *why* the graph is unsolvable.
 * ⚡ **Decentralized, Instant Graph Resolution**: Say goodbye to slow API calls. Beru clones the global registry via Git. Resolution happens entirely offline in $O(1)$ time.
 * 🛡️ **Cryptographic Binary Caching**: Third-party libraries are compiled exactly once. Their resulting `.a`/`.lib` artifacts and headers are globally cached under strict cryptographic hashes of your compiler version and requested C++ standard, completely eliminating ABI poisoning.

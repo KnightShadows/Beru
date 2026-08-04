@@ -45,7 +45,24 @@ Any positional arguments appended to the command will be passed transparently to
 beru run --profile release -- --config prod.json --port 8080
 ```
 
-*Note on Targets:* If your `src/` directory contains multiple executables (e.g., `day1.cpp` and `day2.cpp`), Beru will attempt to parse the first trailing argument as a target if it matches a source file. For example, `beru run day2` will compile and execute `src/day2.cpp`.
+*Note on Targets:* If your `src/` directory contains multiple executables (e.g., `day1.cpp` and `day2.cpp`), Beru will attempt to parse the first trailing argument as a target. For example, `beru run day2` will compile and execute `src/day2.cpp`.
+
+### 3.1. Ad-Hoc Execution (Zero-Configuration Targets)
+
+Beru brings the effortless script-execution experience of Cargo or UV to C++. 
+
+If you pass a `.cpp` file to `beru run`, Beru will execute it as an isolated target, **automatically linking all dependencies** listed in your `Beru.toml`!
+
+```bash
+# Run a file inside src/
+beru run src/script.cpp
+
+# Or run any file path relative to your project!
+beru run test/test_main.cpp
+```
+
+**How it works:**
+If the target is not already defined in your `CMakeLists.txt`, Beru will safely auto-append it. It uses the magical `beru_link_dependencies` macro to ensure your script can immediately `#include` and use any third-party library in your project without you ever needing to write `find_package` or `target_link_libraries`.
 
 ---
 

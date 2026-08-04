@@ -140,6 +140,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
         &build_dir,
         &toolchain_path,
         Some(&resolved_target_name),
+        &[],
     )?;
 
     println!(
@@ -153,7 +154,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
 
 /// Resolve a single dependency: find its source, build it, cache the result.
 /// Returns the install prefix path for the built dependency.
-fn resolve_and_build_locked_dep(
+pub fn resolve_and_build_locked_dep(
     pkg: &beru_manifest::LockedPackage,
     opt_dep: Option<&Dependency>,
     cache: &BeruCache,

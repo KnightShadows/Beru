@@ -3,6 +3,7 @@ use clap::Subcommand;
 
 pub mod add;
 pub mod build;
+pub mod check;
 pub mod clean;
 pub mod index;
 pub mod init;
@@ -40,6 +41,9 @@ pub enum Command {
 
     /// Display a tree of dependencies
     Tree(tree::TreeArgs),
+
+    /// Check the project for errors without producing a binary
+    Check(check::CheckArgs),
 }
 
 /// Dispatch a command.
@@ -54,5 +58,6 @@ pub fn run(cmd: Command) -> Result<()> {
         Command::Clean(args) => clean::exec(args),
         Command::Add(args) => add::exec(args),
         Command::Tree(args) => tree::exec(args),
+        Command::Check(args) => check::exec(args),
     }
 }

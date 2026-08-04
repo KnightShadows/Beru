@@ -146,8 +146,15 @@ pub fn build_project(
     build_dir: &Path,
     toolchain_file: &Path,
     target: Option<&str>,
+    extra_args: &[String],
 ) -> Result<()> {
-    cmake_configure(project_dir, build_dir, build_dir, &[], Some(toolchain_file))?;
+    cmake_configure(
+        project_dir,
+        build_dir,
+        build_dir,
+        extra_args,
+        Some(toolchain_file),
+    )?;
     cmake_build(build_dir, target)?;
     Ok(())
 }

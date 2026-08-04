@@ -73,16 +73,12 @@ Types and traits for working with bytes
 - **Repository**: https://github.com/tokio-rs/bytes
 
 ## cc (v1.4.0)
-A build-time dependency for Cargo build scripts to assist in invoking the native
-C compiler to compile native C code into a static archive to be linked into Rust
-code.
+A build-time dependency for Cargo build scripts to assist in invoking the native C compiler to compile native C code into a static archive to be linked into Rust code.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/rust-lang/cc-rs
 
 ## cfg-if (v1.0.4)
-A macro to ergonomically define an item depending on a large number of #[cfg]
-parameters. Structured like an if-else chain, the first matching branch is the
-item that gets emitted.
+A macro to ergonomically define an item depending on a large number of #[cfg] parameters. Structured like an if-else chain, the first matching branch is the item that gets emitted.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/rust-lang/cfg-if
 
@@ -92,11 +88,7 @@ A tiny utility to help save you a lot of effort with long winded `#[cfg()]` chec
 - **Repository**: https://github.com/katharostech/cfg_aliases
 
 ## chacha20 (v0.10.1)
-The ChaCha20 stream cipher (RFC 8439) implemented in pure Rust using traits
-from the RustCrypto `cipher` crate, with optional architecture-specific
-hardware acceleration (AVX2, SSE2). Additionally provides the ChaCha8, ChaCha12,
-XChaCha20, XChaCha12 and XChaCha8 stream ciphers, and also optional
-rand_core-compatible RNGs based on those ciphers.
+The ChaCha20 stream cipher (RFC 8439) implemented in pure Rust using traits from the RustCrypto `cipher` crate, with optional architecture-specific hardware acceleration (AVX2, SSE2). Additionally provides the ChaCha8, ChaCha12, XChaCha20, XChaCha12 and XChaCha8 stream ciphers, and also optional rand_core-compatible RNGs based on those ciphers.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/RustCrypto/stream-ciphers
 
@@ -125,26 +117,18 @@ Global override of color control
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/rust-cli/anstyle.git
 
-## console (v0.15.11)
-A terminal and console abstraction for Rust
-- **License**: MIT
-- **Repository**: https://github.com/console-rs/console
-
 ## console (v0.16.4)
 A terminal and console abstraction for Rust
 - **License**: MIT
 - **Repository**: https://github.com/console-rs/console
 
 ## const-oid (v0.10.2)
-Const-friendly implementation of the ISO/IEC Object Identifier (OID) standard
-as defined in ITU X.660, with support for BER/DER encoding/decoding as well as
-heapless no_std (i.e. embedded) support
+Const-friendly implementation of the ISO/IEC Object Identifier (OID) standard as defined in ITU X.660, with support for BER/DER encoding/decoding as well as heapless no_std (i.e. embedded) support
 - **License**: Apache-2.0 OR MIT
 - **Repository**: https://github.com/RustCrypto/formats
 
 ## cpufeatures (v0.3.0)
-Lightweight runtime CPU feature detection for aarch64, loongarch64, and x86/x86_64 targets,
-with no_std support and support for mobile targets including Android and iOS
+Lightweight runtime CPU feature detection for aarch64, loongarch64, and x86/x86_64 targets, with no_std support and support for mobile targets including Android and iOS
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/RustCrypto/utils
 
@@ -209,9 +193,7 @@ Find windows-specific tools, read MSVC versions from the registry and from COM i
 - **Repository**: https://github.com/rust-lang/cc-rs
 
 ## flate2 (v1.1.9)
-DEFLATE compression and decompression exposed as Read/BufRead/Write streams.
-Supports miniz_oxide and multiple zlib implementations. Supports zlib, gzip,
-and raw deflate streams.
+DEFLATE compression and decompression exposed as Read/BufRead/Write streams. Supports miniz_oxide and multiple zlib implementations. Supports zlib, gzip, and raw deflate streams.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/rust-lang/flate2-rs
 
@@ -250,11 +232,6 @@ Common utilities and extension traits for the futures-rs library.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/rust-lang/futures-rs
 
-## getrandom (v0.2.17)
-A small cross-platform library for retrieving random data from system source
-- **License**: MIT OR Apache-2.0
-- **Repository**: https://github.com/rust-random/getrandom
-
 ## getrandom (v0.4.3)
 A small cross-platform library for retrieving random data from system source
 - **License**: MIT OR Apache-2.0
@@ -291,9 +268,7 @@ A tiny, safe, speedy, zero-copy HTTP/1.x parser.
 - **Repository**: https://github.com/seanmonstar/httparse
 
 ## hybrid-array (v0.4.14)
-Hybrid typenum-based and const generic array types designed to provide the
-flexibility of typenum-based expressions while also allowing interoperability
-and a transition path to const generics
+Hybrid typenum-based and const generic array types designed to provide the flexibility of typenum-based expressions while also allowing interoperability and a transition path to const generics
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/RustCrypto/hybrid-array
 
@@ -383,8 +358,7 @@ Fast integer primitive to string conversion
 - **Repository**: https://github.com/dtolnay/itoa
 
 ## js-sys (v0.3.103)
-Bindings for all JS global objects and functions in all JS environments like
-Node.js and browsers, built on `#[wasm_bindgen]` using the `wasm-bindgen` crate.
+Bindings for all JS global objects and functions in all JS environments like Node.js and browsers, built on `#[wasm_bindgen]` using the `wasm-bindgen` crate.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js-sys
 
@@ -434,8 +408,7 @@ The package provides the MD5 hash function.
 - **Repository**: https://github.com/stainless-steel/md5
 
 ## memchr (v2.8.3)
-Provides extremely fast (uses SIMD on x86_64, aarch64 and wasm32) routines for
-1, 2 or 3 byte search and single substring search.
+Provides extremely fast (uses SIMD on x86_64, aarch64 and wasm32) routines for 1, 2 or 3 byte search and single substring search.
 - **License**: Unlicense OR MIT
 - **Repository**: https://github.com/BurntSushi/memchr
 
@@ -640,8 +613,7 @@ Serde-compatible spanned Value
 - **Repository**: https://github.com/nox/serde_urlencoded
 
 ## sha2 (v0.11.0)
-Pure Rust implementation of the SHA-2 hash function family
-including SHA-224, SHA-256, SHA-384, and SHA-512.
+Pure Rust implementation of the SHA-2 hash function family including SHA-224, SHA-256, SHA-384, and SHA-512.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/RustCrypto/hashes
 
@@ -671,8 +643,7 @@ Pre-allocated storage for a uniform data type
 - **Repository**: https://github.com/servo/rust-smallvec
 
 ## socket2 (v0.6.5)
-Utilities for handling networking sockets with a maximal amount of configuration
-possible intended.
+Utilities for handling networking sockets with a maximal amount of configuration possible intended.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/rust-lang/socket2
 
@@ -682,8 +653,7 @@ An unsafe marker trait for types like Box and Rc that dereference to a stable ad
 - **Repository**: https://github.com/storyyeller/stable_deref_trait
 
 ## strsim (v0.11.1)
-Implementations of string similarity metrics. Includes Hamming, Levenshtein,
-OSA, Damerau-Levenshtein, Jaro, Jaro-Winkler, and Sørensen-Dice.
+Implementations of string similarity metrics. Includes Hamming, Levenshtein, OSA, Damerau-Levenshtein, Jaro, Jaro-Winkler, and Sørensen-Dice.
 - **License**: MIT
 - **Repository**: https://github.com/rapidfuzz/strsim-rs
 
@@ -691,11 +661,6 @@ OSA, Damerau-Levenshtein, Jaro, Jaro-Winkler, and Sørensen-Dice.
 Pure-Rust traits and utilities for constant-time cryptographic implementations.
 - **License**: BSD-3-Clause
 - **Repository**: https://github.com/dalek-cryptography/subtle
-
-## syn (v2.0.119)
-Parser for Rust source code
-- **License**: MIT OR Apache-2.0
-- **Repository**: https://github.com/dtolnay/syn
 
 ## syn (v3.0.3)
 Parser for Rust source code
@@ -713,10 +678,7 @@ Helper methods and macros for custom derives
 - **Repository**: https://github.com/mystor/synstructure
 
 ## tar (v0.4.46)
-A Rust implementation of a TAR file reader and writer. This library does not
-currently handle compression, but it is abstract over all I/O readers and
-writers. Additionally, great lengths are taken to ensure that the entire
-contents are never required to be entirely resident in memory all at once.
+A Rust implementation of a TAR file reader and writer. This library does not currently handle compression, but it is abstract over all I/O readers and writers. Additionally, great lengths are taken to ensure that the entire contents are never required to be entirely resident in memory all at once.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/composefs/tar-rs
 
@@ -756,8 +718,7 @@ Some macros for tiny containers
 - **Repository**: https://github.com/Soveu/tinyvec_macros
 
 ## tokio (v1.53.1)
-An event-driven, non-blocking I/O platform for writing asynchronous I/O
-backed applications.
+An event-driven, non-blocking I/O platform for writing asynchronous I/O backed applications.
 - **License**: MIT
 - **Repository**: https://github.com/tokio-rs/tokio
 
@@ -767,9 +728,7 @@ Asynchronous TLS/SSL streams for Tokio using Rustls.
 - **Repository**: https://github.com/rustls/tokio-rustls
 
 ## toml (v1.1.4+spec-1.1.0)
-A native Rust encoder and decoder of TOML-formatted files and streams. Provides
-implementations of the standard Serialize/Deserialize traits for TOML data to
-facilitate deserializing and serializing Rust structures.
+A native Rust encoder and decoder of TOML-formatted files and streams. Provides implementations of the standard Serialize/Deserialize traits for TOML data to facilitate deserializing and serializing Rust structures.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/toml-rs/toml
 
@@ -789,8 +748,7 @@ A low-level interface for writing out TOML
 - **Repository**: https://github.com/toml-rs/toml
 
 ## tower (v0.5.3)
-Tower is a library of modular and reusable components for building robust
-clients and servers.
+Tower is a library of modular and reusable components for building robust clients and servers.
 - **License**: MIT
 - **Repository**: https://github.com/tower-rs/tower
 
@@ -840,10 +798,7 @@ A lightweight atomic lock.
 - **Repository**: https://github.com/seanmonstar/try-lock
 
 ## typenum (v1.20.1)
-Typenum is a Rust library for type-level numbers evaluated at
-    compile time. It currently supports bits, unsigned integers, and signed
-    integers. It also provides a type-level array of type-level numbers, but its
-    implementation is incomplete.
+Typenum is a Rust library for type-level numbers evaluated at     compile time. It currently supports bits, unsigned integers, and signed     integers. It also provides a type-level array of type-level numbers, but its     implementation is incomplete.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/paholg/typenum
 
@@ -853,8 +808,7 @@ Determine whether characters have the XID_Start or XID_Continue properties accor
 - **Repository**: https://github.com/dtolnay/unicode-ident
 
 ## unicode-width (v0.2.2)
-Determine displayed width of `char` and `str` types
-according to Unicode Standard Annex #11 rules.
+Determine displayed width of `char` and `str` types according to Unicode Standard Annex #11 rules.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/unicode-rs/unicode-width
 
@@ -924,8 +878,7 @@ Implementation APIs for the `#[wasm_bindgen]` attribute
 - **Repository**: https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro-support
 
 ## wasm-bindgen-shared (v0.2.126)
-Shared support between wasm-bindgen and wasm-bindgen cli, an internal
-dependency.
+Shared support between wasm-bindgen and wasm-bindgen cli, an internal dependency.
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/shared
 
@@ -951,16 +904,6 @@ A Rust equivalent of Unix command "which". Locate installed executable in cross 
 
 ## windows-link (v0.2.1)
 Linking for Windows
-- **License**: MIT OR Apache-2.0
-- **Repository**: https://github.com/microsoft/windows-rs
-
-## windows-sys (v0.52.0)
-Rust for Windows
-- **License**: MIT OR Apache-2.0
-- **Repository**: https://github.com/microsoft/windows-rs
-
-## windows-sys (v0.59.0)
-Rust for Windows
 - **License**: MIT OR Apache-2.0
 - **Repository**: https://github.com/microsoft/windows-rs
 
@@ -1050,11 +993,7 @@ Custom derive for the zerofrom crate
 - **Repository**: https://github.com/unicode-org/icu4x
 
 ## zeroize (v1.9.0)
-Securely clear secrets from memory with a simple trait built on
-stable Rust primitives which guarantee memory is zeroed using an
-operation will not be 'optimized away' by the compiler.
-Uses a portable pure Rust implementation that works everywhere,
-even WASM!
+Securely clear secrets from memory with a simple trait built on stable Rust primitives which guarantee memory is zeroed using an operation will not be 'optimized away' by the compiler. Uses a portable pure Rust implementation that works everywhere, even WASM!
 - **License**: Apache-2.0 OR MIT
 - **Repository**: https://github.com/RustCrypto/utils
 

@@ -43,4 +43,12 @@ Move-Item -Path (Join-Path $TempDir $BinName) -Destination (Join-Path $InstallDi
 
 Remove-Item -Path $TempDir -Recurse -Force
 
-Write-Host "Installation complete! Make sure $InstallDir is in your PATH environment variable."
+$UserPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+if ($UserPath -notlike "*$InstallDir*") {
+    Write-Host "Adding $InstallDir to your PATH..."
+    $NewPath = if ($null -eq $UserPath -or $UserPath -eq "") { $InstallDir } else { "$UserPath;$InstallDir" }
+    [Environment]::SetEnvironmentVariable("PATH", $NewPath, "User")
+    Write-Host "Installation complete! Please restart your PowerShell terminal to use Beru."
+} else {
+    Write-Host "Installation complete! $InstallDir is already in your PATH."
+}

@@ -65,4 +65,19 @@ chmod +x "$INSTALL_DIR/$BIN"
 
 rm -rf "$TMP_DIR"
 
-echo "Installation complete! Make sure $INSTALL_DIR is in your PATH."
+# Attempt to add to PATH automatically
+if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+    echo "Adding $INSTALL_DIR to your PATH..."
+    for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+        if [ -f "$rc" ]; then
+            if ! grep -q "$INSTALL_DIR" "$rc"; then
+                echo "" >> "$rc"
+                echo "# Added by Beru installer" >> "$rc"
+                echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$rc"
+            fi
+        fi
+    done
+    echo "Installation complete! Please restart your terminal or run 'source ~/.bashrc' (or your shell's equivalent) to use Beru."
+else
+    echo "Installation complete! $INSTALL_DIR is already in your PATH."
+fi

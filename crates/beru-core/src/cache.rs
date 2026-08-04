@@ -27,8 +27,13 @@ pub struct BeruCache {
 impl BeruCache {
     /// Create a cache rooted at the platform-standard location (`~/.beru`).
     pub fn default_location() -> Result<Self> {
-        let home = dirs::home_dir().context("could not determine home directory")?;
-        let root = home.join(".beru");
+        let root = if let Ok(custom) = std::env::var("BERU_HOME") {
+            PathBuf::from(custom)
+        } else {
+            dirs::home_dir()
+                .context("could not determine home directory")?
+                .join(".beru")
+        };
         Ok(Self { root })
     }
 

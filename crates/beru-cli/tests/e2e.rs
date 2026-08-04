@@ -11,7 +11,8 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
 
     // 2. Test: beru new
     let mut cmd = Command::cargo_bin("beru")?;
-    cmd.arg("new")
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("new")
         .arg("test-proj")
         .arg("--type")
         .arg("executable")
@@ -27,7 +28,8 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
 
     // 3. Test: beru build
     let mut cmd = Command::cargo_bin("beru")?;
-    cmd.arg("build")
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("build")
         .current_dir(&proj_dir)
         .assert()
         .success()
@@ -37,7 +39,8 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
 
     // 4. Test: beru run
     let mut cmd = Command::cargo_bin("beru")?;
-    cmd.arg("run")
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("run")
         .current_dir(&proj_dir)
         .assert()
         .success()
@@ -51,7 +54,8 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
     )?;
 
     let mut cmd = Command::cargo_bin("beru")?;
-    cmd.arg("run")
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("run")
         .arg("src/script.cpp")
         .current_dir(&proj_dir)
         .assert()
@@ -67,7 +71,8 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
     fs::create_dir(&init_dir)?;
 
     let mut cmd = Command::cargo_bin("beru")?;
-    cmd.arg("init")
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("init")
         .arg("--type")
         .arg("library")
         .current_dir(&init_dir)
@@ -84,8 +89,20 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
     let new_manifest = manifest.replace("[dependencies]", "[dependencies]\nfmt = \"11.0.2\"");
     fs::write(&manifest_path, new_manifest)?;
 
+    // First update the index
     let mut cmd = Command::cargo_bin("beru")?;
-    cmd.arg("resolve").current_dir(&proj_dir).assert().success();
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("index")
+        .arg("update")
+        .assert()
+        .success();
+
+    let mut cmd = Command::cargo_bin("beru")?;
+    cmd.env("BERU_HOME", temp_path.join(".beru"))
+        .arg("resolve")
+        .current_dir(&proj_dir)
+        .assert()
+        .success();
 
     let lockfile = fs::read_to_string(proj_dir.join("Beru.lock"))?;
     assert!(lockfile.contains("fmt"));

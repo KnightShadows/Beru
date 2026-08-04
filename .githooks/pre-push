@@ -19,7 +19,7 @@ fi
 
 # 2. Lint Check
 echo "$PREFIX [2/3] Validating lints (cargo clippy)..."
-if ! cargo clippy --all-targets --all-features -- -D warnings; then
+if ! cargo clippy --workspace --all-targets --all-features -- -D warnings; then
     echo "$PREFIX FATAL: Clippy linting failed." >&2
     echo "$PREFIX HINT: Resolve the warnings above before pushing." >&2
     exit 1
@@ -27,7 +27,7 @@ fi
 
 # 3. Test Suite
 echo "$PREFIX [3/3] Executing test suite (cargo test)..."
-if ! cargo test; then
+if ! cargo test --workspace; then
     echo "$PREFIX FATAL: Test suite failed." >&2
     echo "$PREFIX HINT: Ensure all unit and integration tests pass." >&2
     exit 1

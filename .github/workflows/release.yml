@@ -41,3 +41,23 @@ jobs:
           bin: beru
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies for Linux packages
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby ruby-dev rubygems rpm
+          sudo gem install fpm
+      - name: Build and upload Linux packages
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p package/usr/bin
+          cp target/${{ matrix.target }}/release/beru package/usr/bin/
+          
+          fpm -s dir -t deb -n beru -v $VERSION -C package usr/bin/beru
+          fpm -s dir -t rpm -n beru -v $VERSION -C package usr/bin/beru
+          fpm -s dir -t pacman -n beru -v $VERSION -C package usr/bin/beru
+          
+          gh release upload ${{ github.ref_name }} *.deb *.rpm *.pkg.tar.zst
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

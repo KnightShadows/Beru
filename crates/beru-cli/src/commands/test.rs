@@ -37,6 +37,16 @@ pub fn exec(args: TestArgs) -> Result<()> {
     cmd.current_dir(&build_dir);
     cmd.arg("--output-on-failure");
 
+    // Capitalize profile for CTest config (e.g., "debug" -> "Debug")
+    let profile_capitalized = {
+        let mut chars = args.profile.chars();
+        match chars.next() {
+            None => String::new(),
+            Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
+        }
+    };
+    cmd.arg("-C").arg(&profile_capitalized);
+
     // Run tests in parallel based on available parallelism
     if let Ok(parallelism) = std::thread::available_parallelism() {
         cmd.arg("-j").arg(parallelism.get().to_string());

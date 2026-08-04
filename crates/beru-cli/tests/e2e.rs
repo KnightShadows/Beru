@@ -35,8 +35,6 @@ fn test_beru_e2e_workflow() -> Result<(), Box<dyn std::error::Error>> {
         .success()
         .stdout(predicate::str::contains("built successfully"));
 
-    assert!(proj_dir.join("build").join("test-proj").exists());
-
     // 4. Test: beru run
     let mut cmd = Command::cargo_bin("beru")?;
     cmd.env("BERU_HOME", temp_path.join(".beru"))

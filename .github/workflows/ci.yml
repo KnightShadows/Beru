@@ -54,15 +54,15 @@ jobs:
     steps:
     - name: Install dependencies (Debian)
       if: startsWith(matrix.distro, 'debian')
-      run: apt-get update && apt-get install -y git curl build-essential pkg-config libssl-dev
+      run: apt-get update && apt-get install -y git curl build-essential pkg-config libssl-dev cmake
 
     - name: Install dependencies (Fedora)
       if: startsWith(matrix.distro, 'fedora')
-      run: dnf install -y git curl gcc gcc-c++ make openssl-devel perl findutils
+      run: dnf install -y git curl gcc gcc-c++ make openssl-devel perl findutils cmake
 
     - name: Install dependencies (Arch)
       if: startsWith(matrix.distro, 'archlinux')
-      run: pacman -Syu --noconfirm && pacman -S --noconfirm git curl gcc base-devel openssl
+      run: pacman -Syu --noconfirm && pacman -S --noconfirm git curl gcc base-devel openssl cmake
 
     - uses: actions/checkout@v7
 

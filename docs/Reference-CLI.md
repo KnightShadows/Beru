@@ -47,8 +47,12 @@ The following table provides a high-level overview of the available subcommands.
 | :--- | :--- | :--- |
 | **[`beru new`](Reference-CLI-new.md)** | Scaffolding | Creates a new directory and populates it with a standardized project layout. |
 | **[`beru init`](Reference-CLI-init.md)** | Scaffolding | Initializes a `Beru.toml` manifest within an existing directory without destroying existing code. |
+| **`beru add`** | Dependency | Adds a new dependency directly to the `Beru.toml` manifest, dynamically mutating the AST. |
+| **`beru tree`** | Analysis | Visualizes the resolved dependency graph using an optimal DAG traversal. |
 | **[`beru resolve`](Reference-CLI-resolve.md)** | Resolution | Executes the PubGrub algorithm to compute a deterministic dependency graph and writes it to `Beru.lock`. |
+| **`beru check`** | Orchestration | Performs a fast, syntax-only compilation check bypassing the linker to ensure rapid feedback. |
 | **[`beru build`](Reference-CLI-build.md)** | Orchestration | Resolves, fetches, compiles, and links the entire project and its dependencies. |
+| **`beru test`** | Execution | Implicitly builds the project and executes the CTest suite in parallel. |
 | **[`beru run`](Reference-CLI-run.md)** | Execution | A convenience wrapper that invokes `build` and then immediately spawns the resulting executable binary. |
 | **[`beru index update`](Reference-CLI-index-update.md)** | Maintenance | Synchronizes the local clone of the package registry with the upstream Git repository. |
 | **`beru clean`** | Maintenance | Safely deletes the `.beru/` orchestration directory and the `build/` compilation artifacts, restoring the project to a pristine state. |

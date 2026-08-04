@@ -156,7 +156,21 @@ Hello from Beru!
 
 Congratulations! You have successfully compiled and executed a C++ application managed by Beru.
 
-### 4.2. Ad-Hoc Execution (Zero-Configuration Targets)
+### 4.2. Testing and Fast Syntax Checks
+
+If you want to rapidly iterate without waiting for the linker, you can use the `check` command. It runs a fast syntax-only compilation over your project:
+
+```bash
+beru check
+```
+
+When you are ready to run your test suite, Beru automatically wraps CTest for you, executing your tests in parallel across all available CPU cores:
+
+```bash
+beru test
+```
+
+### 4.3. Ad-Hoc Execution (Zero-Configuration Targets)
 
 Beru brings the effortless script-execution experience of Cargo or UV to C++. 
 

@@ -6,4 +6,5 @@ mod new;
 mod resolve;
 mod run;
 mod support;
+mod test;
 mod tree;

@@ -10,6 +10,7 @@ pub mod init;
 pub mod new;
 pub mod resolve;
 pub mod run;
+pub mod test;
 pub mod tree;
 
 /// Top-level Beru commands.
@@ -44,6 +45,9 @@ pub enum Command {
 
     /// Check the project for errors without producing a binary
     Check(check::CheckArgs),
+
+    /// Run the project's tests
+    Test(test::TestArgs),
 }
 
 /// Dispatch a command.
@@ -59,5 +63,6 @@ pub fn run(cmd: Command) -> Result<()> {
         Command::Add(args) => add::exec(args),
         Command::Tree(args) => tree::exec(args),
         Command::Check(args) => check::exec(args),
+        Command::Test(args) => test::exec(args),
     }
 }

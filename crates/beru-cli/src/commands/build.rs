@@ -110,7 +110,7 @@ pub fn exec(args: BuildArgs) -> Result<()> {
 
     let build_dir = project_dir.join("build");
     println!("{} project...", style("Compiling").green().bold(),);
-    build_project(&project_dir, &build_dir, &toolchain_path)?;
+    build_project(&project_dir, &build_dir, &toolchain_path, Some(&resolved_target_name))?;
 
     println!(
         "  {} {} built successfully",

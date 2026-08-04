@@ -58,15 +58,19 @@ pub fn cmake_configure(
 /// Invoke CMake to build a configured project.
 ///
 /// Runs: `cmake --build <build_dir> --parallel`
-pub fn cmake_build(build_dir: &Path) -> Result<()> {
+pub fn cmake_build(build_dir: &Path, target: Option<&str>) -> Result<()> {
     let cmake = which::which("cmake").context("cmake not found on PATH")?;
 
     info!("building: cmake --build {}", build_dir.display());
 
-    let output = Command::new(&cmake)
-        .arg("--build")
-        .arg(build_dir)
-        .arg("--parallel")
+    let mut cmd = Command::new(&cmake);
+    cmd.arg("--build").arg(build_dir).arg("--parallel");
+    
+    if let Some(t) = target {
+        cmd.arg("--target").arg(t);
+    }
+
+    let output = cmd
         .stdout(std::process::Stdio::inherit())
         .stderr(std::process::Stdio::inherit())
         .output()
@@ -127,7 +131,7 @@ pub fn build_dependency_cmake(
         cmake_args,
         toolchain_file,
     )?;
-    cmake_build(&build_dir)?;
+    cmake_build(&build_dir, None)?;
     cmake_install(&build_dir)?;
 
     Ok(())
@@ -137,8 +141,8 @@ pub fn build_dependency_cmake(
 ///
 /// This generates a toolchain file in the project's build directory,
 /// then runs configure + build.
-pub fn build_project(project_dir: &Path, build_dir: &Path, toolchain_file: &Path) -> Result<()> {
+pub fn build_project(project_dir: &Path, build_dir: &Path, toolchain_file: &Path, target: Option<&str>) -> Result<()> {
     cmake_configure(project_dir, build_dir, build_dir, &[], Some(toolchain_file))?;
-    cmake_build(build_dir)?;
+    cmake_build(build_dir, target)?;
     Ok(())
 }

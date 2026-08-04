@@ -24,6 +24,7 @@ Written entirely in Rust, Beru brings the developer experience of Cargo and npm 
 * 🏃 **Ad-Hoc Execution**: Need to run a quick script or competitive programming file? Run `beru run script.cpp` and Beru will auto-configure CMake and magically link all your dependencies for you!
 * 🧠 **Mathematical Dependency Resolution**: Beru integrates the battle-tested **[PubGrub algorithm](https://github.com/pubgrub-rs/pubgrub)**. When your dependencies conflict, Beru doesn't fail with a cryptic linker error; it outputs a step-by-step logical proof explaining exactly *why* the graph is unsolvable.
 * ⚡ **Decentralized, Instant Graph Resolution**: Say goodbye to slow API calls. Beru clones the global registry via Git. Resolution happens entirely offline in $O(1)$ time.
+* 🛠️ **Enterprise Tooling Built-in**: Fast syntax-only compilations via `beru check`, dependency graph visualization via `beru tree`, and automatic parallel test execution via `beru test`.
 * 🛡️ **Cryptographic Binary Caching**: Third-party libraries are compiled exactly once. Their resulting `.a`/`.lib` artifacts and headers are globally cached under strict cryptographic hashes of your compiler version and requested C++ standard, completely eliminating ABI poisoning.
 * 🔌 **Seamless CMake Integration**: While Beru handles the orchestration, it generates standard `cmake` toolchain files under the hood. It integrates perfectly with your favorite IDEs (CLion, VSCode, Visual Studio).
 
@@ -57,18 +58,11 @@ cd my_engine
 
 ### 3. Add Dependencies
 
-Edit your `Beru.toml`:
+You can dynamically inject dependencies into your project without touching the manifest:
 
-```toml
-[package]
-name = "my_engine"
-version = "0.1.0"
-type = "executable"
-cxx-std = "c++20"
-
-[dependencies]
-fmt = "11.0.2"
-spdlog = "1.14.1"
+```bash
+beru add fmt --version 11.0.2
+beru add spdlog --version 1.14.1
 ```
 
 ### 4. Build and Run

@@ -72,17 +72,20 @@ pub fn generate_toolchain_cmake(
     content.push_str("# Beru Magic Macro: Automatically link all dependencies\n");
     content.push_str("# ---------------------------------------------------------\n");
     content.push_str("macro(beru_link_dependencies TARGET_NAME)\n");
-    
+
     // Sort dependencies for deterministic output
     let mut sorted_deps = cmake_deps.iter().collect::<Vec<_>>();
     sorted_deps.sort_by_key(|d| d.package_name.as_deref().unwrap_or(""));
-    
+
     for dep in sorted_deps {
         if let Some(pkg) = &dep.package_name {
             content.push_str(&format!("    find_package({} REQUIRED)\n", pkg));
         }
         for target in &dep.targets {
-            content.push_str(&format!("    target_link_libraries(${{TARGET_NAME}} PRIVATE {})\n", target));
+            content.push_str(&format!(
+                "    target_link_libraries(${{TARGET_NAME}} PRIVATE {})\n",
+                target
+            ));
         }
     }
     content.push_str("endmacro()\n\n");

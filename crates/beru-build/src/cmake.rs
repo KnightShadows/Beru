@@ -65,7 +65,7 @@ pub fn cmake_build(build_dir: &Path, target: Option<&str>) -> Result<()> {
 
     let mut cmd = Command::new(&cmake);
     cmd.arg("--build").arg(build_dir).arg("--parallel");
-    
+
     if let Some(t) = target {
         cmd.arg("--target").arg(t);
     }
@@ -141,7 +141,12 @@ pub fn build_dependency_cmake(
 ///
 /// This generates a toolchain file in the project's build directory,
 /// then runs configure + build.
-pub fn build_project(project_dir: &Path, build_dir: &Path, toolchain_file: &Path, target: Option<&str>) -> Result<()> {
+pub fn build_project(
+    project_dir: &Path,
+    build_dir: &Path,
+    toolchain_file: &Path,
+    target: Option<&str>,
+) -> Result<()> {
     cmake_configure(project_dir, build_dir, build_dir, &[], Some(toolchain_file))?;
     cmake_build(build_dir, target)?;
     Ok(())

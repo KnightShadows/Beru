@@ -9,7 +9,9 @@ pub fn extract_inline_manifest(source: &str) -> Result<Option<BeruManifest>, Man
 
     // Find the start fence. It must appear on its own comment line, ignoring leading whitespace
     // and a leading "//". Do not accept it mid-line — that invites ambiguity with normal comments.
-    let Some(start_idx) = source.lines().position(|l| l.trim_start_matches("//").trim() == START)
+    let Some(start_idx) = source
+        .lines()
+        .position(|l| l.trim_start_matches("//").trim() == START)
     else {
         return Ok(None);
     };
@@ -53,5 +55,8 @@ fn ensure_default_package(toml_body: &str) -> String {
 
 /// Returns a default manifest for ad-hoc scripts that have no inline block and no surrounding project.
 pub fn default_adhoc_manifest() -> BeruManifest {
-    BeruManifest::parse_toml("[package]\nname = \"adhoc-script\"\nversion = \"0.0.0\"\ntype = \"executable\"\n").unwrap()
+    BeruManifest::parse_toml(
+        "[package]\nname = \"adhoc-script\"\nversion = \"0.0.0\"\ntype = \"executable\"\n",
+    )
+    .unwrap()
 }

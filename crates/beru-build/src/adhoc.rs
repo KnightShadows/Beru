@@ -1,9 +1,9 @@
-use anyhow::{bail, Context, Result};
-use std::path::{Path, PathBuf};
-use beru_core::{cache::BeruCache, abi::AbiProfile};
+use crate::{CMakeDependency, build_project, generate_toolchain_cmake};
+use anyhow::{Context, Result, bail};
+use beru_core::{abi::AbiProfile, cache::BeruCache};
 use beru_manifest::{BeruManifest, Dependency, LockedPackage};
-use crate::{generate_toolchain_cmake, build_project, CMakeDependency};
 use sha2::{Digest, Sha256};
+use std::path::{Path, PathBuf};
 
 /// Build (and cache) an ad-hoc single-file script as an isolated CMake project.
 /// Never touches any file outside `cache_dir` and the returned build directory within it.
@@ -14,11 +14,17 @@ pub fn build_adhoc(
     cache: &BeruCache,
 ) -> Result<PathBuf> {
     let entry_file_contents = std::fs::read_to_string(entry_file)?;
-    
-    let abi_profile = beru_core::toolchain::build_abi_profile(&manifest.package.cxx_std, profile, manifest.build.shared_libs, vec![])?;
+
+    let abi_profile = beru_core::toolchain::build_abi_profile(
+        &manifest.package.cxx_std,
+        profile,
+        manifest.build.shared_libs,
+        vec![],
+    )?;
 
     let project_dir = cache.adhoc_dir();
-    let lockfile = beru_resolve::resolve_graph(manifest, cache, &project_dir, std::env::current_exe().ok())?;
+    let lockfile =
+        beru_resolve::resolve_graph(manifest, cache, &project_dir, std::env::current_exe().ok())?;
 
     let mut hasher = Sha256::new();
     hasher.update(b"abi:");
@@ -31,11 +37,19 @@ pub fn build_adhoc(
         hasher.update(b"@");
         hasher.update(pkg.version.as_bytes());
     }
-    let hash = hasher.finalize().iter().map(|b| format!("{:02x}", b)).collect::<String>();
+    let hash = hasher
+        .finalize()
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>();
 
     let build_dir = cache.adhoc_build_dir(&hash);
     let binary_name = entry_file.file_stem().unwrap().to_string_lossy();
-    let binary_path = build_dir.join(if cfg!(windows) { format!("{}.exe", binary_name) } else { binary_name.to_string() });
+    let binary_path = build_dir.join(if cfg!(windows) {
+        format!("{}.exe", binary_name)
+    } else {
+        binary_name.to_string()
+    });
 
     if binary_path.exists() {
         println!("  cache hit");
@@ -48,7 +62,7 @@ pub fn build_adhoc(
 
     for pkg in &lockfile.packages {
         let opt_dep = manifest.dependencies.get(&pkg.name);
-        
+
         let install_prefix = build_locked_dep(pkg, opt_dep, cache, &abi_hash, &project_dir)?;
         prefix_paths.push(install_prefix);
 
@@ -56,7 +70,10 @@ pub fn build_adhoc(
             &pkg.name,
             Some(&pkg.version),
             &project_dir,
-            std::env::current_exe().ok().as_deref().and_then(|p| p.parent()),
+            std::env::current_exe()
+                .ok()
+                .as_deref()
+                .and_then(|p| p.parent()),
             Some(&cache.recipes_dir()),
             Some(&cache.index_dir()),
         )?;
@@ -74,26 +91,32 @@ pub fn build_adhoc(
     }
 
     std::fs::create_dir_all(&build_dir)?;
-    
-    let target_links = cmake_deps.iter()
+
+    let target_links = cmake_deps
+        .iter()
         .flat_map(|d| d.targets.iter())
         .map(|s| s.as_str())
         .collect::<Vec<_>>()
         .join(" ");
-    
+
     let link_command = if !target_links.is_empty() {
-        format!("target_link_libraries({} PRIVATE {})", binary_name, target_links)
+        format!(
+            "target_link_libraries({} PRIVATE {})",
+            binary_name, target_links
+        )
     } else {
         String::new()
     };
-    
-    let absolute_entry = entry_file.canonicalize().unwrap_or_else(|_| entry_file.to_path_buf());
+
+    let absolute_entry = entry_file
+        .canonicalize()
+        .unwrap_or_else(|_| entry_file.to_path_buf());
     let mut absolute_entry_str = absolute_entry.to_string_lossy().into_owned();
     if absolute_entry_str.starts_with("\\\\?\\") {
         absolute_entry_str = absolute_entry_str[4..].to_string();
     }
     let absolute_entry_str = absolute_entry_str.replace("\\", "/");
-    
+
     let cmakelists = format!(
         "cmake_minimum_required(VERSION 3.20)\nproject(adhoc-script)\nadd_executable({} \"{}\")\n{}\n",
         binary_name, absolute_entry_str, link_command
@@ -132,12 +155,23 @@ fn build_locked_dep(
 
     let source_dir = match opt_dep {
         Some(Dependency::Git(g)) => {
-            let pin = pkg.checksum.as_deref().or(g.rev.as_deref()).or(g.tag.as_deref()).or(g.branch.as_deref());
+            let pin = pkg
+                .checksum
+                .as_deref()
+                .or(g.rev.as_deref())
+                .or(g.tag.as_deref())
+                .or(g.branch.as_deref());
             beru_recipe::fetch_git(cache, &g.git, pin)?
         }
         Some(Dependency::Path(p)) => {
-            let resolved = if p.path.is_absolute() { p.path.clone() } else { project_dir.join(&p.path) };
-            if !resolved.exists() { bail!("path dependency not found"); }
+            let resolved = if p.path.is_absolute() {
+                p.path.clone()
+            } else {
+                project_dir.join(&p.path)
+            };
+            if !resolved.exists() {
+                bail!("path dependency not found");
+            }
             resolved
         }
         _ => {
@@ -145,7 +179,10 @@ fn build_locked_dep(
                 name,
                 Some(version),
                 project_dir,
-                std::env::current_exe().ok().as_deref().and_then(|p| p.parent()),
+                std::env::current_exe()
+                    .ok()
+                    .as_deref()
+                    .and_then(|p| p.parent()),
                 Some(&cache.recipes_dir()),
                 Some(&cache.index_dir()),
             )?;
@@ -157,11 +194,19 @@ fn build_locked_dep(
                         let extracted = beru_recipe::fetch_tarball(cache, &url, &sha)?;
                         beru_recipe::find_source_root(&extracted)?
                     } else {
-                        let pin = pkg.checksum.as_deref().or(src.tag.as_deref()).or(Some(version));
+                        let pin = pkg
+                            .checksum
+                            .as_deref()
+                            .or(src.tag.as_deref())
+                            .or(Some(version));
                         beru_recipe::fetch_git(cache, &url, pin)?
                     }
                 } else if let Some(git) = src.git {
-                    let pin = pkg.checksum.as_deref().or(src.tag.as_deref()).or(Some(version));
+                    let pin = pkg
+                        .checksum
+                        .as_deref()
+                        .or(src.tag.as_deref())
+                        .or(Some(version));
                     beru_recipe::fetch_git(cache, &git, pin)?
                 } else {
                     bail!("Recipe for {} has no source", name);
@@ -176,7 +221,10 @@ fn build_locked_dep(
         name,
         Some(version),
         project_dir,
-        std::env::current_exe().ok().as_deref().and_then(|p| p.parent()),
+        std::env::current_exe()
+            .ok()
+            .as_deref()
+            .and_then(|p| p.parent()),
         Some(&cache.recipes_dir()),
         Some(&cache.index_dir()),
     )?;

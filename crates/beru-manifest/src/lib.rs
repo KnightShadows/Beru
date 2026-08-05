@@ -8,12 +8,12 @@
 
 mod dependency;
 mod error;
+mod inline;
 mod lockfile;
 mod manifest;
-mod inline;
 
 pub use dependency::*;
 pub use error::*;
+pub use inline::*;
 pub use lockfile::*;
 pub use manifest::*;
-pub use inline::*;

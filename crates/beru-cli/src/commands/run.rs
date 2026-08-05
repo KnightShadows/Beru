@@ -46,10 +46,17 @@ pub fn exec(args: RunArgs) -> Result<()> {
                 },
             };
 
-            let binary = beru_build::build_adhoc(&script_path, &effective_manifest, &args.profile, &cache)?;
+            let binary =
+                beru_build::build_adhoc(&script_path, &effective_manifest, &args.profile, &cache)?;
 
-            println!("  {} `{}`\n", style("Running").green().bold(), script_path.display());
-            let status = Command::new(&binary).args(&run_args).status()
+            println!(
+                "  {} `{}`\n",
+                style("Running").green().bold(),
+                script_path.display()
+            );
+            let status = Command::new(&binary)
+                .args(&run_args)
+                .status()
                 .with_context(|| format!("failed to run {}", binary.display()))?;
             if !status.success() {
                 std::process::exit(status.code().unwrap_or(1));
@@ -149,22 +156,25 @@ fn find_file_recursive(dir: &std::path::Path, name: &str) -> Option<std::path::P
     None
 }
 
-fn resolve_script_path(project_dir: &std::path::Path, first_arg: &str) -> Option<std::path::PathBuf> {
+fn resolve_script_path(
+    project_dir: &std::path::Path,
+    first_arg: &str,
+) -> Option<std::path::PathBuf> {
     let path = std::path::Path::new(first_arg);
     if path.extension().and_then(|s| s.to_str()) == Some("cpp") && path.exists() {
         return Some(path.to_path_buf());
     }
-    
+
     let stem = first_arg.strip_suffix(".cpp").unwrap_or(first_arg);
     let root_file = project_dir.join(format!("{}.cpp", stem));
     if root_file.exists() {
         return Some(root_file);
     }
-    
+
     let src_file = project_dir.join("src").join(format!("{}.cpp", stem));
     if src_file.exists() {
         return Some(src_file);
     }
-    
+
     None
 }

@@ -8,12 +8,12 @@
 //! 3. Invoke `cmake --build` to compile
 //! 4. Install built artifacts into the global cache
 
+mod adhoc;
 mod cmake;
 mod custom;
 mod toolchain;
-mod adhoc;
 
+pub use adhoc::*;
 pub use cmake::*;
 pub use custom::*;
 pub use toolchain::*;
-pub use adhoc::*;

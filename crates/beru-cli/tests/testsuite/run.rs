@@ -80,7 +80,11 @@ fn test_beru_run_root_adhoc_script_no_name_collision() {
         .build();
 
     let cmakelists = p.root().join("CMakeLists.txt");
-    std::fs::write(&cmakelists, "cmake_minimum_required(VERSION 3.20)\nproject(hello)\n").unwrap();
+    std::fs::write(
+        &cmakelists,
+        "cmake_minimum_required(VERSION 3.20)\nproject(hello)\n",
+    )
+    .unwrap();
     let original_content = std::fs::read_to_string(&cmakelists).unwrap();
 
     p.beru("run")
@@ -90,7 +94,10 @@ fn test_beru_run_root_adhoc_script_no_name_collision() {
         .stdout(predicate::str::contains("Root Ad-hoc Script Running!"));
 
     let new_content = std::fs::read_to_string(&cmakelists).unwrap();
-    assert_eq!(original_content, new_content, "CMakeLists.txt should be byte-for-byte unchanged");
+    assert_eq!(
+        original_content, new_content,
+        "CMakeLists.txt should be byte-for-byte unchanged"
+    );
 }
 
 #[test]
@@ -108,7 +115,7 @@ fn test_beru_run_inline_manifest_zero_context() {
             "#,
         )
         .build();
-    
+
     std::fs::remove_file(p.root().join("Beru.toml")).ok();
 
     p.beru("run")
@@ -129,7 +136,7 @@ fn test_beru_run_zero_context_no_deps() {
             "#,
         )
         .build();
-    
+
     std::fs::remove_file(p.root().join("Beru.toml")).ok();
 
     p.beru("run")
@@ -150,13 +157,10 @@ fn test_beru_run_adhoc_cache_hit() {
             "#,
         )
         .build();
-    
+
     std::fs::remove_file(p.root().join("Beru.toml")).ok();
 
-    p.beru("run")
-        .arg("script.cpp")
-        .assert()
-        .success();
+    p.beru("run").arg("script.cpp").assert().success();
 
     p.beru("run")
         .arg("script.cpp")
@@ -191,5 +195,7 @@ fn test_beru_run_fallback_warns() {
         .arg("script.cpp")
         .assert()
         .success()
-        .stderr(predicate::str::contains("running script using surrounding project's dependencies"));
+        .stderr(predicate::str::contains(
+            "running script using surrounding project's dependencies",
+        ));
 }

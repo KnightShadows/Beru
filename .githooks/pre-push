@@ -26,8 +26,9 @@ if ! cargo clippy --workspace --all-targets --all-features -- -D warnings; then
 fi
 
 # 3. Test Suite
-echo "$PREFIX [3/3] Executing test suite (cargo test)..."
-if ! cargo test --workspace; then
+echo "[beru:pre-push] Running unit and integration tests..."
+cargo test --workspace -- --test-threads=1
+if [ $? -ne 0 ]; then
     echo "$PREFIX FATAL: Test suite failed." >&2
     echo "$PREFIX HINT: Ensure all unit and integration tests pass." >&2
     exit 1

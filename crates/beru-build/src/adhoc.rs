@@ -1,6 +1,6 @@
 use crate::{CMakeDependency, build_project, generate_toolchain_cmake};
-use anyhow::{Context, Result, bail};
-use beru_core::{abi::AbiProfile, cache::BeruCache};
+use anyhow::{Result, bail};
+use beru_core::cache::BeruCache;
 use beru_manifest::{BeruManifest, Dependency, LockedPackage};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};

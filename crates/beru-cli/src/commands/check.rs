@@ -131,17 +131,23 @@ pub fn exec(args: CheckArgs) -> Result<()> {
 
     let build_dir = project_dir.join("build");
 
-    // Inject -fsyntax-only to bypass linking and full code generation
-    // We must also bypass CMake's compiler checks, as -fsyntax-only prevents linking
-    // We override the linker command to 'true' (or cmake -E true) to prevent linking errors
-    // since the compiler won't output object files.
+    let override_path = project_dir.join("beru-override.cmake");
+    std::fs::write(
+        &override_path,
+        "set(CMAKE_CXX_LINK_EXECUTABLE \"cmake -E echo\" CACHE STRING \"\" FORCE)\nset(CMAKE_C_LINK_EXECUTABLE \"cmake -E echo\" CACHE STRING \"\" FORCE)\n",
+    ).context("failed to write override.cmake")?;
+
+    let override_arg = format!(
+        "-DCMAKE_USER_MAKE_RULES_OVERRIDE={}",
+        override_path.display().to_string().replace("\\", "/")
+    );
+
     let extra_args = vec![
         "-DCMAKE_CXX_FLAGS=-fsyntax-only".to_string(),
         "-DCMAKE_C_FLAGS=-fsyntax-only".to_string(),
         "-DCMAKE_CXX_COMPILER_WORKS=1".to_string(),
         "-DCMAKE_C_COMPILER_WORKS=1".to_string(),
-        "-DCMAKE_CXX_LINK_EXECUTABLE=cmake -E true".to_string(),
-        "-DCMAKE_C_LINK_EXECUTABLE=cmake -E true".to_string(),
+        override_arg,
     ];
 
     build_project(

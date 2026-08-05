@@ -118,7 +118,14 @@ pub fn build_adhoc(
     let absolute_entry_str = absolute_entry_str.replace("\\", "/");
 
     let cmakelists = format!(
-        "cmake_minimum_required(VERSION 3.20)\nproject(adhoc-script)\nadd_executable({} \"{}\")\n{}\n",
+        "cmake_minimum_required(VERSION 3.20)\n\
+        project(adhoc-script)\n\
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}\")\n\
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG \"${{CMAKE_BINARY_DIR}}\")\n\
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE \"${{CMAKE_BINARY_DIR}}\")\n\
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO \"${{CMAKE_BINARY_DIR}}\")\n\
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL \"${{CMAKE_BINARY_DIR}}\")\n\
+        add_executable({} \"{}\")\n{}\n",
         binary_name, absolute_entry_str, link_command
     );
     std::fs::write(build_dir.join("CMakeLists.txt"), cmakelists)?;

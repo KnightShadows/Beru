@@ -85,6 +85,16 @@ impl BeruCache {
         self.build_dir(abi_hash, package, version).join("lib")
     }
 
+    /// Directory for ad-hoc script build artifacts (`~/.beru/cache/adhoc/`).
+    pub fn adhoc_dir(&self) -> PathBuf {
+        self.root.join("cache").join("adhoc")
+    }
+
+    /// Directory for one specific ad-hoc build, keyed by content+ABI hash.
+    pub fn adhoc_build_dir(&self, hash: &str) -> PathBuf {
+        self.adhoc_dir().join(hash)
+    }
+
     /// Directory for git clones (`~/.beru/cache/git/`).
     pub fn git_dir(&self) -> PathBuf {
         self.root.join("cache").join("git")
@@ -120,6 +130,7 @@ impl BeruCache {
             self.recipes_dir(),
             self.bin_dir(),
             self.index_dir(),
+            self.adhoc_dir(),
         ];
         for dir in &dirs {
             if !dir.exists() {

@@ -51,18 +51,30 @@ beru run --profile release -- --config prod.json --port 8080
 
 Beru brings the effortless script-execution experience of Cargo or UV to C++. 
 
-If you pass a `.cpp` file to `beru run`, Beru will execute it as an isolated target, **automatically linking all dependencies** listed in your `Beru.toml`!
+If you pass a `.cpp` file to `beru run`, Beru will execute it as an isolated target.
 
-```bash
-# Run a file inside src/
-beru run src/script.cpp
-
-# Or run any file path relative to your project!
-beru run test/test_main.cpp
+**1. Inline Manifests**
+Scripts can declare their own dependencies using an inline `/// beru` manifest block at the top of the file. This allows scripts to run anywhere, even outside of a Beru project. The block accepts standard `[dependencies]` and `[package]` fields (though package metadata is optional).
+```cpp
+// /// beru
+// [dependencies]
+// fmt = "10.2.1"
+// ///
+#include <fmt/core.h>
+int main() { fmt::print("Hello, {}!\n", "beru"); }
 ```
 
-**How it works:**
-If the target is not already defined in your `CMakeLists.txt`, Beru will safely auto-append it. It uses the magical `beru_link_dependencies` macro to ensure your script can immediately `#include` and use any third-party library in your project without you ever needing to write `find_package` or `target_link_libraries`.
+**2. Execution Context & Fallback**
+Beru determines a script's dependencies based on its context:
+- **Inline:** If an inline manifest is present, it is used exclusively.
+- **Project Fallback:** If no inline manifest is found, but the script is inside a Beru project, it runs using the surrounding project's dependencies. A warning is emitted to stderr notifying you of this fallback behavior.
+- **Zero-Context:** If no inline manifest is found and the script is not in a project, it compiles against the standard library only.
+
+**3. Isolation**
+Beru safely compiles ad-hoc scripts in a dedicated global cache directory. **Your project's `CMakeLists.txt` is never modified** when running ad-hoc scripts.
+
+**4. Global Cache**
+Ad-hoc builds are cached globally based on the script's contents and ABI profile. Repeated runs of an unchanged script will result in an instant cache hit, skipping the dependency resolution and build phases entirely.
 
 ---
 

@@ -19,6 +19,44 @@ pub struct RunArgs {
 
 pub fn exec(args: RunArgs) -> Result<()> {
     let project_dir = std::env::current_dir().context("failed to get current directory")?;
+    let mut run_args = args.args.clone();
+
+    // Determine if the first trailing arg is a source file (root-relative or bare).
+    if let Some(first) = run_args.first().cloned() {
+        let candidate = resolve_script_path(&project_dir, &first);
+        if let Some(script_path) = candidate {
+            run_args.remove(0);
+            let source = std::fs::read_to_string(&script_path)
+                .with_context(|| format!("failed to read {}", script_path.display()))?;
+
+            let cache = beru_core::cache::BeruCache::default_location()?;
+            cache.ensure_dirs()?;
+
+            let effective_manifest = match beru_manifest::extract_inline_manifest(&source)? {
+                Some(inline) => inline,
+                None => match BeruManifest::from_dir(&project_dir) {
+                    Ok(project_manifest) => {
+                        eprintln!(
+                            "{} running script using surrounding project's dependencies (no inline `/// beru` block found)",
+                            style("Warning:").yellow().bold()
+                        );
+                        project_manifest
+                    }
+                    Err(_) => beru_manifest::default_adhoc_manifest(),
+                },
+            };
+
+            let binary = beru_build::build_adhoc(&script_path, &effective_manifest, &args.profile, &cache)?;
+
+            println!("  {} `{}`\n", style("Running").green().bold(), script_path.display());
+            let status = Command::new(&binary).args(&run_args).status()
+                .with_context(|| format!("failed to run {}", binary.display()))?;
+            if !status.success() {
+                std::process::exit(status.code().unwrap_or(1));
+            }
+            return Ok(());
+        }
+    }
 
     let manifest = BeruManifest::from_dir(&project_dir).context("failed to parse Beru.toml")?;
 
@@ -29,37 +67,7 @@ pub fn exec(args: RunArgs) -> Result<()> {
         );
     }
 
-    let mut target = None;
-    let mut run_args = args.args.clone();
-
-    if let Some(first) = run_args.first().cloned() {
-        let path = std::path::Path::new(&first);
-        if path.extension().and_then(|s| s.to_str()) == Some("cpp") && path.exists() {
-            // It's an ad-hoc file
-            let stem = path.file_stem().unwrap().to_string_lossy().into_owned();
-            target = Some(stem.clone());
-            run_args.remove(0);
-
-            // Auto-edit CMakeLists.txt if target is missing
-            auto_append_target(&project_dir, &stem, path)?;
-        } else {
-            let stem = first.strip_suffix(".cpp").unwrap_or(&first);
-            let src_file = project_dir.join("src").join(format!("{}.cpp", stem));
-            if src_file.exists() {
-                target = Some(stem.to_string());
-                run_args.remove(0); // Pop the target off so it doesn't get passed as an arg to the executable
-
-                // Auto-edit CMakeLists.txt if target is missing
-                let rel_path = std::path::Path::new("src").join(format!("{}.cpp", stem));
-                auto_append_target(&project_dir, stem, &rel_path)?;
-            } else {
-                bail!(
-                    "source file '{}' not found in current directory or src/ directory",
-                    first
-                );
-            }
-        }
-    }
+    let target = None;
 
     let (resolved_target, _) = super::build::resolve_target(&project_dir, target.as_deref())?;
     let mut actual_target_name = resolved_target.clone();
@@ -141,44 +149,22 @@ fn find_file_recursive(dir: &std::path::Path, name: &str) -> Option<std::path::P
     None
 }
 
-/// Automatically appends an executable target to CMakeLists.txt if it does not already exist.
-fn auto_append_target(
-    project_dir: &std::path::Path,
-    target_name: &str,
-    cpp_file: &std::path::Path,
-) -> Result<()> {
-    let cmakelists = project_dir.join("CMakeLists.txt");
-    if !cmakelists.exists() {
-        return Ok(());
+fn resolve_script_path(project_dir: &std::path::Path, first_arg: &str) -> Option<std::path::PathBuf> {
+    let path = std::path::Path::new(first_arg);
+    if path.extension().and_then(|s| s.to_str()) == Some("cpp") && path.exists() {
+        return Some(path.to_path_buf());
     }
-
-    let content = std::fs::read_to_string(&cmakelists)?;
-
-    // Check if the target is already defined
-    let search1 = format!("add_executable({}", target_name);
-    let search2 = format!("add_executable( {}", target_name);
-
-    if !content.contains(&search1) && !content.contains(&search2) {
-        let mut new_content = content.clone();
-        if !new_content.ends_with('\n') {
-            new_content.push('\n');
-        }
-
-        // Ensure path uses forward slashes for CMake
-        let path_str = cpp_file.display().to_string().replace("\\", "/");
-
-        new_content.push_str("\n# --- Auto-generated by Beru ---\n");
-        new_content.push_str(&format!("add_executable({} {})\n", target_name, path_str));
-        new_content.push_str(&format!("beru_link_dependencies({})\n", target_name));
-
-        std::fs::write(&cmakelists, new_content).context("Failed to auto-update CMakeLists.txt")?;
-
-        println!(
-            "{} target '{}' to CMakeLists.txt",
-            style("Auto-added").green().bold(),
-            target_name
-        );
+    
+    let stem = first_arg.strip_suffix(".cpp").unwrap_or(first_arg);
+    let root_file = project_dir.join(format!("{}.cpp", stem));
+    if root_file.exists() {
+        return Some(root_file);
     }
-
-    Ok(())
+    
+    let src_file = project_dir.join("src").join(format!("{}.cpp", stem));
+    if src_file.exists() {
+        return Some(src_file);
+    }
+    
+    None
 }

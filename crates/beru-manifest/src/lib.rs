@@ -10,8 +10,10 @@ mod dependency;
 mod error;
 mod lockfile;
 mod manifest;
+mod inline;
 
 pub use dependency::*;
 pub use error::*;
 pub use lockfile::*;
 pub use manifest::*;
+pub use inline::*;

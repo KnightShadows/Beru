@@ -147,6 +147,8 @@ pub fn exec(args: CheckArgs) -> Result<()> {
         "-DCMAKE_C_FLAGS=-fsyntax-only".to_string(),
         "-DCMAKE_CXX_COMPILER_WORKS=1".to_string(),
         "-DCMAKE_C_COMPILER_WORKS=1".to_string(),
+        "-DCMAKE_CXX_COMPILER_FORCED=1".to_string(),
+        "-DCMAKE_C_COMPILER_FORCED=1".to_string(),
         override_arg,
     ];
 

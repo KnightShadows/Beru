@@ -123,6 +123,7 @@ pub fn build_dependency_cmake(
     install_prefix: &Path,
     cmake_args: &[String],
     toolchain_file: Option<&Path>,
+    profile: &str,
 ) -> Result<()> {
     let build_dir = source_dir.join("_beru_build");
 
@@ -131,15 +132,27 @@ pub fn build_dependency_cmake(
             .with_context(|| format!("failed to clean {}", build_dir.display()))?;
     }
 
+    let cmake_build_type = match profile {
+        "debug" => "Debug",
+        "release" => "Release",
+        "relwithdebinfo" => "RelWithDebInfo",
+        "minsizerel" => "MinSizeRel",
+        other => other,
+    };
+
+    let mut extra_args = cmake_args.to_vec();
+    extra_args.push(format!("-DCMAKE_BUILD_TYPE={}", cmake_build_type));
+
     cmake_configure(
         source_dir,
         &build_dir,
         install_prefix,
-        cmake_args,
+        &extra_args,
         toolchain_file,
     )?;
-    cmake_build(&build_dir, None, Some("Release"))?;
-    cmake_install(&build_dir, Some("Release"))?;
+
+    cmake_build(&build_dir, None, Some(cmake_build_type))?;
+    cmake_install(&build_dir, Some(cmake_build_type))?;
 
     Ok(())
 }

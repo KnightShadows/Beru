@@ -14,6 +14,7 @@ pub fn resolve_and_build_locked_dep(
     cache: &BeruCache,
     abi_hash: &str,
     project_dir: &Path,
+    profile: &str,
 ) -> Result<PathBuf> {
     let name = &pkg.name;
     let version = &pkg.version;
@@ -105,10 +106,16 @@ pub fn resolve_and_build_locked_dep(
         if r.build.system == "custom" {
             crate::build_dependency_custom(&source_dir, &install_prefix, &r.build.commands)?;
         } else {
-            crate::build_dependency_cmake(&source_dir, &install_prefix, &r.build.cmake_args, None)?;
+            crate::build_dependency_cmake(
+                &source_dir,
+                &install_prefix,
+                &r.build.cmake_args,
+                None,
+                profile,
+            )?;
         }
     } else {
-        crate::build_dependency_cmake(&source_dir, &install_prefix, &[], None)?;
+        crate::build_dependency_cmake(&source_dir, &install_prefix, &[], None, profile)?;
     }
 
     Ok(install_prefix)

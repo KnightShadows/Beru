@@ -73,8 +73,14 @@ pub fn build_adhoc(
     for pkg in &lockfile.packages {
         let opt_dep = manifest.dependencies.get(&pkg.name);
 
-        let install_prefix =
-            crate::resolve_and_build_locked_dep(pkg, opt_dep, cache, &abi_hash, project_dir)?;
+        let install_prefix = crate::resolve_and_build_locked_dep(
+            pkg,
+            opt_dep,
+            cache,
+            &abi_hash,
+            project_dir,
+            profile,
+        )?;
         prefix_paths.push(install_prefix);
 
         let recipe = beru_recipe::resolve_recipe(

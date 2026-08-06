@@ -11,9 +11,11 @@
 mod adhoc;
 mod cmake;
 mod custom;
+mod deps;
 mod toolchain;
 
 pub use adhoc::*;
 pub use cmake::*;
 pub use custom::*;
+pub use deps::*;
 pub use toolchain::*;

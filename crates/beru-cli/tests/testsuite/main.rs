@@ -1,5 +1,6 @@
 mod add;
 mod build;
+mod cache;
 mod check;
 mod init;
 mod new;

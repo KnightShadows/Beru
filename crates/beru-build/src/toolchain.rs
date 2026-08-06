@@ -58,10 +58,13 @@ pub fn generate_toolchain_cmake(
 
     if !prefix_paths.is_empty() {
         content.push_str("# Beru-managed dependency install prefixes\n");
-        content.push_str("list(PREPEND CMAKE_PREFIX_PATH\n");
+        content.push_str("set(CMAKE_PREFIX_PATH\n");
         for path in prefix_paths {
-            content.push_str(&format!("    \"{}\"\n", path.display()));
+            let escaped = path.to_string_lossy().replace('\\', "/");
+            content.push_str(&format!("    \"{}\"\n", escaped));
         }
+        content.push_str("    ${CMAKE_PREFIX_PATH}\n");
+        content.push_str("    CACHE STRING \"Beru prefixes\" FORCE\n");
         content.push_str(")\n\n");
     }
 
@@ -73,7 +76,6 @@ pub fn generate_toolchain_cmake(
     content.push_str("# ---------------------------------------------------------\n");
     content.push_str("macro(beru_link_dependencies TARGET_NAME)\n");
 
-    // Sort dependencies for deterministic output
     let mut sorted_deps = cmake_deps.iter().collect::<Vec<_>>();
     sorted_deps.sort_by_key(|d| d.package_name.as_deref().unwrap_or(""));
 

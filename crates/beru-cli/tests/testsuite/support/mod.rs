@@ -62,6 +62,11 @@ impl Project {
         &self.root
     }
 
+    /// Return the absolute path to the isolated BERU_HOME.
+    pub fn beru_home(&self) -> &Path {
+        &self.beru_home
+    }
+
     /// Create a Beru command pre-configured with the project's root as cwd,
     /// and the sandbox's isolated BERU_HOME.
     pub fn beru(&self, cmd: &str) -> Command {

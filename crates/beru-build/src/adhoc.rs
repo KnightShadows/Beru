@@ -1,7 +1,7 @@
 use crate::{CMakeDependency, build_project, generate_toolchain_cmake};
-use anyhow::{Result, bail};
+use anyhow::Result;
 use beru_core::cache::BeruCache;
-use beru_manifest::{BeruManifest, Dependency, LockedPackage};
+use beru_manifest::BeruManifest;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
@@ -22,9 +22,18 @@ pub fn build_adhoc(
         vec![],
     )?;
 
-    let project_dir = cache.adhoc_dir();
+    let project_dir = entry_file
+        .parent()
+        .map(|p| {
+            if p.as_os_str().is_empty() {
+                Path::new(".")
+            } else {
+                p
+            }
+        })
+        .unwrap_or_else(|| Path::new("."));
     let lockfile =
-        beru_resolve::resolve_graph(manifest, cache, &project_dir, std::env::current_exe().ok())?;
+        beru_resolve::resolve_graph(manifest, cache, project_dir, std::env::current_exe().ok())?;
 
     let mut hasher = Sha256::new();
     hasher.update(b"abi:");
@@ -45,14 +54,15 @@ pub fn build_adhoc(
 
     let build_dir = cache.adhoc_build_dir(&hash);
     let binary_name = entry_file.file_stem().unwrap().to_string_lossy();
+    let sanitized_name = sanitize_cmake_identifier(&binary_name);
     let binary_path = build_dir.join(if cfg!(windows) {
-        format!("{}.exe", binary_name)
+        format!("{}.exe", sanitized_name)
     } else {
-        binary_name.to_string()
+        sanitized_name.to_string()
     });
 
     if binary_path.exists() {
-        println!("  cache hit");
+        println!("  cache hit: {}", binary_path.display());
         return Ok(binary_path);
     }
 
@@ -63,13 +73,14 @@ pub fn build_adhoc(
     for pkg in &lockfile.packages {
         let opt_dep = manifest.dependencies.get(&pkg.name);
 
-        let install_prefix = build_locked_dep(pkg, opt_dep, cache, &abi_hash, &project_dir)?;
+        let install_prefix =
+            crate::resolve_and_build_locked_dep(pkg, opt_dep, cache, &abi_hash, project_dir)?;
         prefix_paths.push(install_prefix);
 
         let recipe = beru_recipe::resolve_recipe(
             &pkg.name,
             Some(&pkg.version),
-            &project_dir,
+            project_dir,
             std::env::current_exe()
                 .ok()
                 .as_deref()
@@ -92,22 +103,6 @@ pub fn build_adhoc(
 
     std::fs::create_dir_all(&build_dir)?;
 
-    let target_links = cmake_deps
-        .iter()
-        .flat_map(|d| d.targets.iter())
-        .map(|s| s.as_str())
-        .collect::<Vec<_>>()
-        .join(" ");
-
-    let link_command = if !target_links.is_empty() {
-        format!(
-            "target_link_libraries({} PRIVATE {})",
-            binary_name, target_links
-        )
-    } else {
-        String::new()
-    };
-
     let absolute_entry = entry_file
         .canonicalize()
         .unwrap_or_else(|_| entry_file.to_path_buf());
@@ -125,8 +120,9 @@ pub fn build_adhoc(
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE \"${{CMAKE_BINARY_DIR}}\")\n\
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO \"${{CMAKE_BINARY_DIR}}\")\n\
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL \"${{CMAKE_BINARY_DIR}}\")\n\
-        add_executable({} \"{}\")\n{}\n",
-        binary_name, absolute_entry_str, link_command
+        add_executable({} \"{}\")\n\
+        beru_link_dependencies({})\n",
+        sanitized_name, absolute_entry_str, sanitized_name
     );
     std::fs::write(build_dir.join("CMakeLists.txt"), cmakelists)?;
 
@@ -142,111 +138,21 @@ pub fn build_adhoc(
 
     build_project(&build_dir, &build_dir, &toolchain_file, None, &[])?;
 
+    println!("  binary: {}", binary_path.display());
     Ok(binary_path)
 }
 
-fn build_locked_dep(
-    pkg: &LockedPackage,
-    opt_dep: Option<&Dependency>,
-    cache: &BeruCache,
-    abi_hash: &str,
-    project_dir: &Path,
-) -> Result<PathBuf> {
-    let name = &pkg.name;
-    let version = &pkg.version;
-    let install_prefix = cache.build_dir(abi_hash, name, version);
-
-    if cache.has_build(abi_hash, name, version) {
-        return Ok(install_prefix);
-    }
-
-    let source_dir = match opt_dep {
-        Some(Dependency::Git(g)) => {
-            let pin = pkg
-                .checksum
-                .as_deref()
-                .or(g.rev.as_deref())
-                .or(g.tag.as_deref())
-                .or(g.branch.as_deref());
-            beru_recipe::fetch_git(cache, &g.git, pin)?
-        }
-        Some(Dependency::Path(p)) => {
-            let resolved = if p.path.is_absolute() {
-                p.path.clone()
-            } else {
-                project_dir.join(&p.path)
-            };
-            if !resolved.exists() {
-                bail!("path dependency not found");
-            }
-            resolved
-        }
-        _ => {
-            let recipe = beru_recipe::resolve_recipe(
-                name,
-                Some(version),
-                project_dir,
-                std::env::current_exe()
-                    .ok()
-                    .as_deref()
-                    .and_then(|p| p.parent()),
-                Some(&cache.recipes_dir()),
-                Some(&cache.index_dir()),
-            )?;
-            if let Some((r, _)) = recipe {
-                let src = r.source;
-                if let Some(url) = src.url {
-                    if url.ends_with(".tar.gz") {
-                        let sha = pkg.checksum.clone().or(src.sha256).expect("sha256 missing");
-                        let extracted = beru_recipe::fetch_tarball(cache, &url, &sha)?;
-                        beru_recipe::find_source_root(&extracted)?
-                    } else {
-                        let pin = pkg
-                            .checksum
-                            .as_deref()
-                            .or(src.tag.as_deref())
-                            .or(Some(version));
-                        beru_recipe::fetch_git(cache, &url, pin)?
-                    }
-                } else if let Some(git) = src.git {
-                    let pin = pkg
-                        .checksum
-                        .as_deref()
-                        .or(src.tag.as_deref())
-                        .or(Some(version));
-                    beru_recipe::fetch_git(cache, &git, pin)?
-                } else {
-                    bail!("Recipe for {} has no source", name);
-                }
-            } else {
-                bail!("Could not find source or recipe for {}", name);
-            }
-        }
-    };
-
-    let recipe = beru_recipe::resolve_recipe(
-        name,
-        Some(version),
-        project_dir,
-        std::env::current_exe()
-            .ok()
-            .as_deref()
-            .and_then(|p| p.parent()),
-        Some(&cache.recipes_dir()),
-        Some(&cache.index_dir()),
-    )?;
-
-    std::fs::create_dir_all(&install_prefix)?;
-
-    if let Some((r, _)) = recipe {
-        if r.build.system == "custom" {
-            crate::build_dependency_custom(&source_dir, &install_prefix, &r.build.commands)?;
+/// A valid CMake target identifier derived from a script's filename stem. CMake target names
+/// must start with a letter/underscore and are safest restricted to alphanumerics/underscores —
+/// arbitrary script filenames (spaces, dots beyond the extension, unicode) don't guarantee that.
+fn sanitize_cmake_identifier(stem: &str) -> String {
+    let mut out = String::from("adhoc_");
+    for c in stem.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            out.push(c);
         } else {
-            crate::build_dependency_cmake(&source_dir, &install_prefix, &r.build.cmake_args, None)?;
+            out.push('_');
         }
-    } else {
-        crate::build_dependency_cmake(&source_dir, &install_prefix, &[], None)?;
     }
-
-    Ok(install_prefix)
+    out
 }

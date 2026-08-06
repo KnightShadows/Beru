@@ -138,6 +138,7 @@ dependencies = [
  "beru-manifest",
  "beru-recipe",
  "beru-resolve",
+ "console 0.15.11",
  "serde",
  "sha2",
  "tempfile",

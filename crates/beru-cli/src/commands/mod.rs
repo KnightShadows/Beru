@@ -3,6 +3,7 @@ use clap::Subcommand;
 
 pub mod add;
 pub mod build;
+pub mod cache;
 pub mod check;
 pub mod clean;
 pub mod index;
@@ -37,6 +38,9 @@ pub enum Command {
     /// Remove build artifacts
     Clean(clean::CleanArgs),
 
+    /// Manage global cache
+    Cache(cache::CacheArgs),
+
     /// Add a dependency to Beru.toml
     Add(add::AddArgs),
 
@@ -60,6 +64,7 @@ pub fn run(cmd: Command) -> Result<()> {
         Command::Resolve(args) => resolve::exec(args),
         Command::Index(args) => index::exec(args),
         Command::Clean(args) => clean::exec(args),
+        Command::Cache(args) => cache::exec(args),
         Command::Add(args) => add::exec(args),
         Command::Tree(args) => tree::exec(args),
         Command::Check(args) => check::exec(args),

@@ -106,12 +106,62 @@ fn test_beru_run_inline_manifest_zero_context() {
         .file(
             "script_with_deps.cpp",
             r#"
-            // /// beru
-            // [package]
-            // cxx-std = "c++20"
-            // ///
+// /// beru
+// [dependencies]
+// fmt = "11.0.2"
+// ///
+#include <fmt/core.h>
+int main() {
+    fmt::print("Inline dep works!\\n");
+    return 0;
+}
+            "#,
+        )
+        .build();
+
+    std::fs::remove_file(p.root().join("Beru.toml")).ok();
+
+    // Override the registry recipe for fmt to disable tests, preventing OOM
+    let recipes_dir = p.root().join("recipes").join("fmt");
+    std::fs::create_dir_all(&recipes_dir).unwrap();
+    std::fs::write(
+        recipes_dir.join("recipe.toml"),
+        r#"
+        [package]
+        name = "fmt"
+        version = "11.0.2"
+        [source]
+        url = "https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz"
+        sha256 = "6cb1e6d37bdcb756dbbe59be438790db409cdb4868c66e888d5df9f13f7c027f"
+        [build]
+        system = "cmake"
+        cmake-args = ["-DFMT_TEST=OFF", "-DFMT_DOC=OFF"]
+        [export]
+        cmake-package = "fmt"
+        cmake-targets = ["fmt::fmt"]
+        link-libs = ["fmt"]
+        "#,
+    )
+    .unwrap();
+
+    p.beru("run")
+        .arg("script_with_deps.cpp")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Inline dep works!"));
+}
+
+#[test]
+fn test_beru_run_space_in_filename() {
+    let p = project("space_filename")
+        .file(
+            "my script.cpp",
+            r#"
             #include <iostream>
-            int main() { std::cout << "Inline dep works!\n"; }
+            int main() {
+                std::cout << "Space script works!\n";
+                return 0;
+            }
             "#,
         )
         .build();
@@ -119,10 +169,10 @@ fn test_beru_run_inline_manifest_zero_context() {
     std::fs::remove_file(p.root().join("Beru.toml")).ok();
 
     p.beru("run")
-        .arg("script_with_deps.cpp")
+        .arg("my script.cpp")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Inline dep works!"));
+        .stdout(predicate::str::contains("Space script works!"));
 }
 
 #[test]

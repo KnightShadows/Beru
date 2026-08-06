@@ -4,7 +4,8 @@ use console::style;
 use std::path::{Path, PathBuf};
 use tracing::{debug, info};
 
-use crate::commands::build::{resolve_and_build_locked_dep, resolve_target};
+use crate::commands::build::resolve_target;
+use beru_build::resolve_and_build_locked_dep;
 use beru_build::{build_project, generate_toolchain_cmake};
 use beru_core::cache::BeruCache;
 use beru_core::toolchain;

@@ -57,8 +57,8 @@ pub fn cmake_configure(
 
 /// Invoke CMake to build a configured project.
 ///
-/// Runs: `cmake --build <build_dir> --parallel`
-pub fn cmake_build(build_dir: &Path, target: Option<&str>) -> Result<()> {
+/// Runs: `cmake --build <build_dir> --parallel [--config <build_type>]`
+pub fn cmake_build(build_dir: &Path, target: Option<&str>, build_type: Option<&str>) -> Result<()> {
     let cmake = which::which("cmake").context("cmake not found on PATH")?;
 
     info!("building: cmake --build {}", build_dir.display());
@@ -68,6 +68,9 @@ pub fn cmake_build(build_dir: &Path, target: Option<&str>) -> Result<()> {
 
     if let Some(t) = target {
         cmd.arg("--target").arg(t);
+    }
+    if let Some(bt) = build_type {
+        cmd.arg("--config").arg(bt);
     }
 
     let output = cmd
@@ -85,15 +88,19 @@ pub fn cmake_build(build_dir: &Path, target: Option<&str>) -> Result<()> {
 
 /// Invoke CMake to install built artifacts.
 ///
-/// Runs: `cmake --install <build_dir>`
-pub fn cmake_install(build_dir: &Path) -> Result<()> {
+/// Runs: `cmake --install <build_dir> [--config <build_type>]`
+pub fn cmake_install(build_dir: &Path, build_type: Option<&str>) -> Result<()> {
     let cmake = which::which("cmake").context("cmake not found on PATH")?;
 
     info!("installing: cmake --install {}", build_dir.display());
 
-    let output = Command::new(&cmake)
-        .arg("--install")
-        .arg(build_dir)
+    let mut cmd = Command::new(&cmake);
+    cmd.arg("--install").arg(build_dir);
+    if let Some(bt) = build_type {
+        cmd.arg("--config").arg(bt);
+    }
+
+    let output = cmd
         .stdout(std::process::Stdio::inherit())
         .stderr(std::process::Stdio::inherit())
         .output()
@@ -131,8 +138,8 @@ pub fn build_dependency_cmake(
         cmake_args,
         toolchain_file,
     )?;
-    cmake_build(&build_dir, None)?;
-    cmake_install(&build_dir)?;
+    cmake_build(&build_dir, None, Some("Release"))?;
+    cmake_install(&build_dir, Some("Release"))?;
 
     Ok(())
 }
@@ -145,6 +152,7 @@ pub fn build_project(
     project_dir: &Path,
     build_dir: &Path,
     toolchain_file: &Path,
+    profile: &str,
     target: Option<&str>,
     extra_args: &[String],
 ) -> Result<()> {
@@ -155,6 +163,13 @@ pub fn build_project(
         extra_args,
         Some(toolchain_file),
     )?;
-    cmake_build(build_dir, target)?;
+    let cmake_build_type = match profile {
+        "debug" => "Debug",
+        "release" => "Release",
+        "relwithdebinfo" => "RelWithDebInfo",
+        "minsizerel" => "MinSizeRel",
+        other => other,
+    };
+    cmake_build(build_dir, target, Some(cmake_build_type))?;
     Ok(())
 }

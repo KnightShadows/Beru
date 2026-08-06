@@ -136,7 +136,7 @@ pub fn build_adhoc(
         &cmake_deps,
     )?;
 
-    build_project(&build_dir, &build_dir, &toolchain_file, None, &[])?;
+    build_project(&build_dir, &build_dir, &toolchain_file, profile, None, &[])?;
 
     println!("  binary: {}", binary_path.display());
     Ok(binary_path)

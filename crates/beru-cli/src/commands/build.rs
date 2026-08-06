@@ -139,7 +139,8 @@ pub fn exec(args: BuildArgs) -> Result<()> {
         &project_dir,
         &build_dir,
         &toolchain_path,
-        Some(&resolved_target_name),
+        &args.profile,
+        Some(resolved_target_name.as_str()),
         &[],
     )?;
 
